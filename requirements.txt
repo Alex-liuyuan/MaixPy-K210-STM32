@@ -1,0 +1,22 @@
+# MaixPy-K210-STM32 项目依赖
+# Python构建依赖
+setuptools>=40.0
+wheel>=0.30.0
+pybind11>=2.6.0
+cmake>=3.15.0
+
+# 开发工具依赖
+pyserial>=3.4
+click>=7.0
+colorama>=0.4.0
+tqdm>=4.60.0
+
+# K210相关依赖
+kflash>=1.0.0
+
+# STM32相关依赖（可选）
+# pyocd>=0.30.0  # STM32 OpenOCD 支持
+
+# 文档生成依赖
+mkdocs>=1.2.0
+mkdocs-material>=7.0.0
