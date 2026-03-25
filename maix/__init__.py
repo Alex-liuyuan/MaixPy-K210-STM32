@@ -1,6 +1,5 @@
 """
-MaixPy-K210-STM32 核心模块
-支持K210和STM32平台的统一Python API
+MaixPy Nano RT-Thread 核心模块
 """
 
 import sys
@@ -8,26 +7,54 @@ import os
 import time as _time
 
 # 版本信息
-__version__ = "1.0.0"
+__version__ = "0.1.0"
+
+def _normalize_platform_name(name):
+    """将平台名归一化为上层 API 使用的类别。"""
+    if not name:
+        return None
+
+    value = str(name).strip().lower()
+    if value in ("linux", "stm32"):
+        return value
+    if value == "rtthread" or value.startswith("stm32"):
+        return "stm32"
+    return None
 
 # 平台检测
 def _detect_platform():
-    """自动检测当前运行平台"""
+    """自动检测当前运行平台
+
+    优先级：
+    1. MAIX_PLATFORM 环境变量
+    2. PLATFORM=rtthread 兼容
+    3. _maix_hal.platform 属性
+    4. Cortex-M machine 字符串
+    5. 默认 'linux'
+    """
+    import platform as _plat
+
+    env = _normalize_platform_name(os.environ.get("MAIX_PLATFORM"))
+    if env:
+        return env
+
+    env2 = _normalize_platform_name(os.environ.get("PLATFORM"))
+    if env2:
+        return env2
+
     try:
-        # 尝试导入平台特定模块
-        import platform
-        machine = platform.machine().lower()
-        
-        if 'k210' in machine or 'riscv' in machine:
-            return 'k210'
-        elif 'arm' in machine:
-            return 'stm32'
-        elif 'x86' in machine or 'amd64' in machine:
-            return 'linux'
-        else:
-            return 'unknown'
-    except:
-        return 'unknown'
+        import _maix_hal as _hal
+        hal_plat = _normalize_platform_name(getattr(_hal, "platform", ""))
+        if hal_plat:
+            return hal_plat
+    except ImportError:
+        pass
+
+    machine = _plat.machine().lower()
+    if "stm32" in machine or "cortex-m" in machine:
+        return "stm32"
+    # x86/amd64/aarch64/armv7l 均归为 linux
+    return "linux"
 
 # 全局平台变量
 _current_platform = _detect_platform()
@@ -40,7 +67,6 @@ class MockModule:
     """模拟模块基类"""
     def __init__(self, module_name):
         self.module_name = module_name
-        print(f"[MaixPy-K210-STM32] 加载模拟模块: {module_name}")
 
 # 时间模块
 class Time:
@@ -63,14 +89,7 @@ class Time:
     
     def ticks_ms(self):
         """获取系统滴答(毫秒)"""
-        if _current_platform == 'k210':
-            # K210实现
-            try:
-                # from machine import time_pulse_us  # K210特定导入
-                return int(_time.perf_counter() * 1000)
-            except ImportError:
-                return int(_time.perf_counter() * 1000)
-        elif _current_platform == 'stm32':
+        if _current_platform == 'stm32':
             # STM32实现
             return int(_time.perf_counter() * 1000)
         else:
@@ -100,13 +119,36 @@ class Time:
         """开始FPS计算"""
         self._fps_start_time = _time.perf_counter()
 
+    def ticks_s(self) -> int:
+        """获取系统滴答（秒）"""
+        return int(_time.perf_counter())
+
+    def ticks_us(self) -> int:
+        """获取系统滴答（微秒）"""
+        return int(_time.perf_counter() * 1_000_000)
+
+    def ticks_diff(self, start_ticks_ms: int) -> int:
+        """计算经过毫秒数，处理 32bit 溢出"""
+        diff = self.ticks_ms() - start_ticks_ms
+        return diff + (1 << 32) if diff < 0 else diff
+
+    def localtime(self):
+        """获取本地时间"""
+        import datetime as _dt
+        return _dt.datetime.now()
+
+    def timezone(self) -> int:
+        """获取时区偏移（秒）"""
+        import time as _t
+        return -_t.timezone
+
 # 应用模块
 class App:
     """应用控制接口"""
     
     def __init__(self):
         self._exit_flag = False
-        self._app_id = f"maixpy_k210_stm32_{_current_platform}"
+        self._app_id = f"maixpy_nano_rtthread_{_current_platform}"
         
     def need_exit(self):
         """检查是否需要退出"""
@@ -130,9 +172,7 @@ class Sys:
     
     def device_id(self):
         """获取设备ID"""
-        if _current_platform == 'k210':
-            return "k210_device"
-        elif _current_platform == 'stm32':
+        if _current_platform == 'stm32':
             return "stm32_device"
         else:
             return "unknown_device"
@@ -148,79 +188,62 @@ class Sys:
 # GPIO模块
 class GPIO:
     """统一GPIO接口"""
-    
-    # GPIO模式定义
-    MODE_INPUT = 0
+
+    # 内部枚举（对齐官方 MaixPy v4）
+    class Mode:
+        OUT    = 1
+        IN     = 0
+        AF     = 2
+        ANALOG = 3
+
+    class Pull:
+        NONE = 0
+        UP   = 1
+        DOWN = 2
+
+    # 旧常量保留（向后兼容）
+    MODE_INPUT  = 0
     MODE_OUTPUT = 1
-    MODE_AF = 2
+    MODE_AF     = 2
     MODE_ANALOG = 3
-    
+
     # GPIO状态定义
-    LOW = 0
+    LOW  = 0
     HIGH = 1
-    
+
     def __init__(self, pin, mode=MODE_OUTPUT, pull=None):
-        self.pin = pin
+        self.pin  = pin
         self.mode = mode
         self.pull = pull
         self._init_gpio()
-    
+
     def _init_gpio(self):
         """初始化GPIO"""
-        if _current_platform == 'k210':
-            # K210 GPIO初始化
+        if _current_platform == 'stm32':
             try:
-                # from fpioa_manager import fm  # K210特定导入
-                # from Maix import GPIO as K210_GPIO  # K210特定导入
-                # self._gpio = K210_GPIO(self.pin, self.mode)
-                self._gpio = None  # 暂时使用模拟模式
+                import _maix_hal
+                _maix_hal.gpio_init(self.pin, self.mode, self.pull or 0)
+                self._gpio = _maix_hal
             except ImportError:
-                print(f"[GPIO] K210平台GPIO初始化失败，使用模拟模式")
-                self._gpio = None
-                
-        elif _current_platform == 'stm32':
-            # STM32 GPIO初始化
-            try:
-                # 调用HAL层GPIO接口
-                # import _maix_hal  # STM32特定导入
-                # _maix_hal.gpio_init(self.pin, self.mode, self.pull or 0)
-                self._gpio = None  # 暂时使用模拟模式
-            except ImportError:
-                print(f"[GPIO] STM32平台GPIO初始化失败，使用模拟模式")
                 self._gpio = None
         else:
-            # 其他平台模拟
-            print(f"[GPIO] 模拟GPIO {self.pin}, 模式: {self.mode}")
             self._gpio = None
+            self._mock_state = 0
     
     def value(self, val=None):
         """读写GPIO值"""
         if val is None:
-            # 读取
-            if _current_platform == 'k210' and self._gpio:
-                return self._gpio.value()
+            if _current_platform == 'stm32' and self._gpio:
+                return self._gpio.gpio_read(self.pin)
             elif _current_platform == 'stm32':
-                try:
-                    # import _maix_hal  # STM32特定导入
-                    # return _maix_hal.gpio_read(self.pin)
-                    return 0  # 暂时返回模拟值
-                except ImportError:
-                    return 0
-            else:
                 return 0
-        else:
-            # 写入
-            if _current_platform == 'k210' and self._gpio:
-                self._gpio.value(val)
-            elif _current_platform == 'stm32':
-                try:
-                    # import _maix_hal  # STM32特定导入
-                    # _maix_hal.gpio_write(self.pin, val)
-                    print(f"[GPIO] STM32模拟写入 GPIO{self.pin} = {val}")
-                except ImportError:
-                    pass
             else:
-                print(f"[GPIO] 模拟写入 GPIO{self.pin} = {val}")
+                return getattr(self, '_mock_state', 0)
+        else:
+            if _current_platform == 'stm32' and self._gpio:
+                self._gpio.gpio_write(self.pin, val)
+            else:
+                self._mock_state = 1 if val else 0
     
     def on(self):
         """置高"""
@@ -261,5 +284,7 @@ def delay_us(us):
     """延时(微秒)"""
     time.sleep_us(us)
 
-print(f"[MaixPy-K210-STM32] 初始化完成，当前平台: {_current_platform}")
-print(f"[MaixPy-K210-STM32] 版本: {__version__}")
+import logging as _logging
+_log = _logging.getLogger("maix")
+_log.debug(f"[MaixPy Nano RT-Thread] 初始化完成，当前平台: {_current_platform}")
+_log.debug(f"[MaixPy Nano RT-Thread] 版本: {__version__}")

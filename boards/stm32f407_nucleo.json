@@ -1,0 +1,15 @@
+{
+  "name": "STM32F407 Nucleo",
+  "platform": "rtthread",
+  "status": "stable",
+  "arch": "arm",
+  "led_pin": "PA5",
+  "uart": {
+    "baud": 115200
+  },
+  "openocd": {
+    "interface": "interface/stlink.cfg",
+    "target": "target/stm32f4x.cfg",
+    "address": "0x08000000"
+  }
+}

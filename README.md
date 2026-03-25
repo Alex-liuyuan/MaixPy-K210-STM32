@@ -1,256 +1,110 @@
-MaixPy-K210-STM32
-==================
+# MaixPy Nano RT-Thread
 
-<div align="center">
+面向 RT-Thread Nano 的 MaixPy 风格产品原型。
 
-![](https://wiki.sipeed.com/maixpy/static/image/maixpy_banner.png)
+当前仓库只保留一条真实可交付主线：
 
-**基于MaixPy，支持K210和STM32的边缘AI开发框架**
+- 真板：`STM32F407 Nucleo + RT-Thread Nano`
+- 仿真：`QEMU olimex-stm32-h405`
 
-**MaixPy-K210-STM32**: 轻松在K210和STM32开发板上使用Python进行AI项目开发
+这条主线已经具备：
 
-<h3>
-    <a href="#quick-start"> 快速开始 </a> |
-    <a href="#documentation"> 文档 </a> |
-    <a href="#api"> API </a> |
-    <a href="#hardware"> 硬件支持 </a>
-</h3>
+- 固件构建
+- ST-Link + OpenOCD 烧录入口
+- 串口 / semihosting 日志
+- 统一的产品运行时骨架
+- QEMU 最小可验证链路
+- 明确的能力声明，不伪造 AI / 摄像头 / 显示成功结果
 
-[![License](https://img.shields.io/badge/license-Apache%20v2.0-orange.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/)
+当前还没有完成：
 
-中文 | [English](./README_EN.md)
+- 嵌入式 Python VM
+- `boot.py` / `main.py` 脚本加载
+- VFS / 模型文件加载
+- 真正的板上模型推理闭环
 
-</div>
+## 仓库结构
 
-## 功能概述
+```text
+app/                              产品运行时骨架
+boards/                           当前板卡描述
+cmake/                            CMake 与工具链配置
+components/drivers/stm32/         STM32 驱动
+components/hal/                   通用 HAL 接口
+docs/                             当前产品文档
+maix/                             主机侧 API 与测试辅助
+rtthread-nano-master/             RT-Thread Nano 内核与 F407 BSP
+sim/                              QEMU 仿真入口
+tests/                            主机回归测试
+tools/                            构建 / 烧录 / 监视工具
+```
 
-MaixPy-K210-STM32 基于 MaixPy v4 架构，提供对 K210 和 STM32 开发板的完整支持。通过统一的 Python API，您可以轻松实现：
+## 当前支持
 
-- **AI 视觉应用**: 目标检测、图像分类、人脸识别等
-- **传感器数据处理**: GPIO、I2C、SPI、UART等外设操作
-- **音频处理**: 音频录制、播放、语音识别
-- **网络通信**: WiFi、蓝牙等无线通信
-- **显示控制**: LCD屏幕、OLED显示等
-
-## 支持的硬件平台
-
-### K210 系列开发板
-- Sipeed Maix-I Dock
-- Sipeed Maix-I Go
-- Sipeed Maix-I Cube
-- Sipeed Maix-I BiT
-- Sipeed Maix-I Nano
-
-### STM32 系列开发板
-- STM32F4 Discovery
-- STM32F7 Discovery
-- STM32H7 系列
-- 自定义 STM32 开发板
+| 目标 | 状态 | 说明 |
+|------|------|------|
+| `rtthread` | 可用 | 构建 STM32F407 真板固件 |
+| `sim` | 可用 | 构建并运行 QEMU 验证链路 |
 
 ## 快速开始
 
-### 1. 克隆项目
+构建真板固件：
 
 ```bash
-git clone https://github.com/sipeed/maixpy-k210-stm32.git
-cd maixpy-k210-stm32
+python3 project.py build -p rtthread
 ```
 
-### 2. 安装依赖
+构建 QEMU 固件：
 
 ```bash
-# 安装Python依赖
-pip install -r requirements.txt
-
-# K210开发环境
-pip install kflash
-
-# STM32开发环境
-# 安装STM32CubeIDE或ARM GCC工具链
+python3 project.py build -p sim
 ```
 
-### 3. 编译和烧录
-
-#### K210平台
-```bash
-# 配置K210目标
-python project.py menuconfig -p k210
-
-# 编译
-python project.py build -p k210
-
-# 烧录
-python project.py flash -p k210 -d /dev/ttyUSB0
-```
-
-#### STM32平台
-```bash
-# 配置STM32目标
-python project.py menuconfig -p stm32f407
-
-# 编译
-python project.py build -p stm32f407
-
-# 烧录
-python project.py flash -p stm32f407 -d COM3
-```
-
-### 4. 运行示例
+启动 QEMU 监视面板：
 
 ```bash
-# 运行基础示例
-python examples/basic/hello_maix.py
-
-# 运行GPIO控制示例
-python examples/basic/gpio_demo.py
-
-# 运行AI分类示例
-python examples/vision/image_classification.py
+python3 project.py monitor -p sim
 ```
 
-### 简单示例
+烧录真板：
 
-```python
-from maix import camera, display, app, time, nn
-
-# 初始化摄像头和显示器
-cam = camera.Camera(224, 224)
-disp = display.Display()
-
-# 加载AI模型（支持K210 KPU和STM32 AI推理）
-detector = nn.YOLOv5(model_path="/flash/yolov5s.kmodel")
-
-while not app.need_exit():
-    # 获取图像
-    img = cam.read()
-    
-    # AI推理
-    objects = detector.detect(img)
-    
-    # 绘制检测结果
-    for obj in objects:
-        img.draw_rectangle(obj.x, obj.y, obj.w, obj.h, color=(255, 0, 0))
-        img.draw_string(obj.x, obj.y-20, f"{obj.label}: {obj.score:.2f}")
-    
-    # 显示图像
-    disp.show(img)
-    print(f"FPS: {time.fps():.1f}")
+```bash
+python3 project.py flash -p rtthread
 ```
 
-## 项目结构
+串口监视：
 
-```
-MaixPy-K210-STM32/
-├── README.md                   # 项目说明
-├── README_EN.md               # 英文说明  
-├── requirements.txt           # Python依赖
-├── project.py                 # 项目构建脚本
-├── setup.py                   # Python包安装脚本
-├── configs/                   # 平台配置文件
-│   ├── k210_config.mk
-│   ├── stm32f407_config.mk
-│   └── stm32h7_config.mk
-├── components/                # 核心组件
-│   ├── maix/                 # 主要Python绑定
-│   ├── hal/                  # 硬件抽象层
-│   ├── drivers/              # 硬件驱动
-│   │   ├── k210/            # K210特定驱动
-│   │   └── stm32/           # STM32特定驱动
-│   └── third_party/         # 第三方库
-├── examples/                  # 示例代码
-│   ├── basic/               # 基础示例
-│   ├── vision/              # 视觉应用
-│   ├── audio/               # 音频应用
-│   ├── peripheral/          # 外设控制
-│   └── ai/                  # AI应用
-├── docs/                     # 文档
-├── tools/                    # 开发工具
-└── tests/                    # 测试代码
+```bash
+python3 project.py monitor -p rtthread -d /dev/ttyACM0
 ```
 
-## 项目完成状态
+## 运行时命令
 
-✅ **已完成的功能**:
-- [x] 硬件抽象层(HAL)设计
-- [x] K210平台驱动和组件
-- [x] STM32平台驱动和组件
-- [x] 统一的Python API接口
-- [x] 摄像头和显示模块
-- [x] GPIO控制接口
-- [x] AI推理引擎(支持KPU和STM32 AI)
-- [x] 构建系统和配置文件
-- [x] 基础功能示例
-- [x] 完整的项目文档
+固件启动后，FinSH 可执行：
 
-🚧 **待完善的功能**:
-- [ ] 更多外设驱动(SPI, I2C, UART的完整实现)
-- [ ] 网络通信模块
-- [ ] 音频处理模块
-- [ ] 文件系统支持
-- [ ] 更多AI模型示例
-- [ ] 单元测试框架
+```text
+maix_info
+maix_state
+```
 
-## 核心特性
+它们分别输出当前运行时能力边界和基本状态。
 
-### 硬件抽象层 (HAL)
-- 统一的GPIO、SPI、I2C、UART接口
-- 自动平台检测和适配
-- 灵活的驱动扩展机制
+## 真实边界
 
-### AI推理引擎
-- K210: KPU硬件加速
-- STM32: STM32Cube.AI + X-CUBE-AI
-- 统一的模型加载和推理接口
+QEMU 只用于它真实支持的能力验证。当前不会在 QEMU 中伪造以下结果：
 
-### 多媒体支持
-- 摄像头: OV2640、OV5640等
-- 显示: ILI9341、ST7789等LCD
-- 音频: I2S、PDM麦克风支持
+- LED
+- GPIO 可见外设行为
+- 摄像头
+- 显示
+- Python VM
+- 模型推理
 
-### 开发工具
-- 跨平台构建系统
-- 一键烧录工具
-- 串口调试工具
-- 性能分析工具
+## 下一步
 
-## 性能对比
+要把这个仓库继续做成真正“类似 MaixPy”的产品，下一阶段必须按顺序完成：
 
-| 特性 | K210 | STM32F407 | STM32H7 |
-|------|------|-----------|---------|
-| CPU | 400MHz RISC-V x2 | 168MHz ARM Cortex-M4 | 480MHz ARM Cortex-M7 |
-| 内存 | 6MB SRAM | 192KB SRAM | 1MB SRAM |
-| AI加速 | KPU 0.25TOPS | 无硬件加速 | 无硬件加速 |
-| 摄像头分辨率 | 640x480 | 320x240 | 640x480 |
-| AI推理速度 | MobileNet 50fps | MobileNet 5fps | MobileNet 15fps |
-
-## 应用领域
-
-- **智能监控**: 人脸识别、行为分析
-- **工业检测**: 缺陷检测、质量控制
-- **教育培训**: AI教学、STEM教育
-- **创客项目**: 智能家居、机器人
-- **产品原型**: 快速验证、概念展示
-
-## 开发者支持
-
-### 社区
-- QQ群: 123456789
-- 论坛: [discuss.sipeed.com](https://discuss.sipeed.com)
-- GitHub Issues: [github.com/sipeed/maixpy-k210-stm32](https://github.com/sipeed/maixpy-k210-stm32)
-
-### 文档
-- [快速入门指南](docs/zh/quickstart.md)
-- [API参考手册](docs/zh/api/index.md)
-- [硬件适配指南](docs/zh/hardware_porting.md)
-- [常见问题解答](docs/zh/faq.md)
-
-## 许可证
-
-本项目采用 [Apache License 2.0](LICENSE) 许可证，第三方库保持其原有许可证。
-
-## 致谢
-
-- 感谢 [Sipeed](https://sipeed.com) 提供的 MaixPy 基础框架
-- 感谢 K210 和 STM32 开发者社区的贡献
-- 感谢所有为本项目做出贡献的开发者
+1. 接入嵌入式 Python VM。
+2. 接入 VFS 和脚本启动链。
+3. 接入模型文件装载与推理后端。
+4. 用第二种架构板卡做真实移植，再谈跨架构统一。

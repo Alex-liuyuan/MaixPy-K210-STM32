@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/root/myproject/adam/MaixPy-K210-STM32/rtthread-nano-master/rt-thread/bsp/stm32f407-msh/Middlewares/Third_Party/RealThread_RTOS/libcpu/arm/cortex-m4/context_gcc.S
+

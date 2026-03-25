@@ -1,11 +1,46 @@
 """
-MaixPy-K210-STM32 神经网络模块
-支持K210 KPU和STM32 AI推理的统一接口
+MaixPy Nano RT-Thread 神经网络模块
 """
 
 import os
 import numpy as np
 from . import _current_platform
+
+
+def _running_on_host():
+    import platform as _plat
+    return _plat.system().lower() == "linux"
+
+
+def _softmax(logits):
+    logits = np.asarray(logits, dtype=np.float32)
+    logits = logits - np.max(logits)
+    exp = np.exp(logits)
+    denom = np.sum(exp)
+    if denom <= 0:
+        return np.zeros_like(exp)
+    return exp / denom
+
+
+def _mock_class_output(input_data, output_shape):
+    classes = 1000
+    if output_shape:
+        classes = int(output_shape[-1])
+
+    arr = np.asarray(input_data, dtype=np.float32).flatten()
+    if arr.size == 0:
+        top_idx = 0
+        amplitude = 3.0
+    else:
+        window = arr[: min(arr.size, 4096)]
+        mean_val = float(np.mean(window))
+        var_val = float(np.var(window))
+        top_idx = int(abs(mean_val) * 1000 + var_val * 100) % max(classes, 1)
+        amplitude = 3.0 + min(var_val, 5.0)
+
+    logits = np.full(classes, -2.0, dtype=np.float32)
+    logits[top_idx] = amplitude
+    return _softmax(logits)
 
 
 class NeuralNetwork:
@@ -34,54 +69,43 @@ class NeuralNetwork:
         Args:
             model_path: 模型文件路径
         """
-        if not os.path.exists(model_path):
+        if (_current_platform == 'stm32'
+                and not _running_on_host()
+                and not os.path.exists(model_path)):
             raise FileNotFoundError(f"模型文件不存在: {model_path}")
         
         self.model_path = model_path
         
-        if _current_platform == 'k210':
-            self._load_k210_model(model_path)
-        elif _current_platform == 'stm32':
+        if _current_platform == 'stm32':
             self._load_stm32_model(model_path)
         else:
             self._load_mock_model(model_path)
     
-    def _load_k210_model(self, model_path):
-        """加载K210 KPU模型"""
-        try:
-            # import KPU  # K210特定导入
-            # self.model = KPU.load(model_path)
-            # self.input_shape = KPU.get_input_shape(self.model)
-            # self.output_shape = KPU.get_output_shape(self.model)
-            self.input_shape = (224, 224, 3)  # 模拟输入形状
-            self.output_shape = (1000,)       # 模拟输出形状
-            self.loaded = True
-            print(f"[NN] K210 KPU模型加载成功: {model_path}")
-        except ImportError:
-            print(f"[NN] K210 KPU模型加载失败，使用模拟模式: {model_path}")
-            self._load_mock_model(model_path)
-    
     def _load_stm32_model(self, model_path):
-        """加载STM32 AI模型"""
+        """加载 STM32 TFLite 模型（主机测试阶段通过 mock HAL）"""
         try:
-            # import _maix_hal  # STM32特定导入
-            # self.model = _maix_hal.ai_load_model(model_path)
-            # self.input_shape = _maix_hal.ai_get_input_shape(self.model)
-            # self.output_shape = _maix_hal.ai_get_output_shape(self.model)
-            self.input_shape = (224, 224, 3)  # 模拟输入形状
-            self.output_shape = (1000,)       # 模拟输出形状
+            import _maix_hal
+            if not hasattr(_maix_hal, "TfliteRunner"):
+                raise RuntimeError("_maix_hal 缺少 TfliteRunner")
+            self._runner = _maix_hal.TfliteRunner(256 * 1024)
+            self._runner.load_file(model_path)
+            shape = self._runner.input_shape(0)
+            self.input_shape  = tuple(shape) if shape else (224, 224, 3)
+            out_shape = self._runner.output_shape(0)
+            self.output_shape = tuple(out_shape) if out_shape else (1000,)
             self.loaded = True
-            print(f"[NN] STM32 AI模型加载成功: {model_path}")
-        except ImportError:
-            print(f"[NN] STM32 AI模型加载失败，使用模拟模式: {model_path}")
-            self._load_mock_model(model_path)
+            print(f"[NN] STM32 TFLite模型加载成功: {model_path}")
+        except ImportError as e:
+            raise RuntimeError("STM32平台缺少可用的 _maix_hal 后端") from e
+        except Exception as e:
+            raise RuntimeError(f"STM32模型加载失败: {e}") from e
     
     def _load_mock_model(self, model_path):
-        """加载模拟模型"""
+        """仅用于主机开发/测试的 mock 模型"""
         self.input_shape = (224, 224, 3)
         self.output_shape = (1000,)
         self.loaded = True
-        print(f"[NN] 模拟模型加载: {model_path}")
+        print(f"[NN] 主机 mock 模型加载: {model_path}")
     
     def forward(self, input_data):
         """
@@ -96,53 +120,35 @@ class NeuralNetwork:
         if not self.loaded:
             raise RuntimeError("模型未加载")
         
-        if _current_platform == 'k210':
-            return self._forward_k210(input_data)
-        elif _current_platform == 'stm32':
+        if _current_platform == 'stm32':
             return self._forward_stm32(input_data)
         else:
             return self._forward_mock(input_data)
     
-    def _forward_k210(self, input_data):
-        """K210 KPU前向推理"""
-        try:
-            # import KPU  # K210特定导入
-            # output = KPU.forward(self.model, input_data)
-            # return output
-            return np.array(np.random.random(self.output_shape), dtype=np.float32)
-        except ImportError:
-            return self._forward_mock(input_data)
-    
     def _forward_stm32(self, input_data):
-        """STM32 AI前向推理"""
-        try:
-            # import _maix_hal  # STM32特定导入
-            # output = _maix_hal.ai_inference(self.model, input_data)
-            # return output
-            return np.array(np.random.random(self.output_shape), dtype=np.float32)
-        except ImportError:
-            return self._forward_mock(input_data)
+        """STM32 TFLite真实推理"""
+        if hasattr(self, '_runner') and self._runner and self._runner.is_loaded():
+            import numpy as np
+            arr = np.asarray(input_data, dtype=np.float32).flatten()
+            # 归一化到 [0, 1]
+            if arr.max() > 1.0:
+                arr = arr / 255.0
+            result = self._runner.run(arr)
+            return np.array(result, dtype=np.float32)
+        raise RuntimeError("STM32 推理后端未就绪，拒绝返回伪造结果")
     
     def _forward_mock(self, input_data):
-        """模拟前向推理"""
-        return np.array(np.random.random(self.output_shape), dtype=np.float32)
+        """主机开发/测试使用的确定性 mock 推理"""
+        return _mock_class_output(input_data, self.output_shape)
     
     def unload(self):
         """卸载模型"""
         if self.loaded:
-            if _current_platform == 'k210':
+            if _current_platform == 'stm32':
                 try:
-                    # import KPU  # K210特定导入
-                    # KPU.unload(self.model)
-                    pass
-                except:
-                    pass
-            elif _current_platform == 'stm32':
-                try:
-                    # import _maix_hal  # STM32特定导入
-                    # _maix_hal.ai_unload_model(self.model)
-                    pass
-                except:
+                    if hasattr(self, "_runner"):
+                        self._runner = None
+                except Exception:
                     pass
             
             self.model = None
@@ -166,7 +172,7 @@ class Classifier(NeuralNetwork):
         
         # 如果没有提供标签，尝试加载标签文件
         if not self.labels and model_path:
-            label_path = model_path.replace('.kmodel', '.txt').replace('.tflite', '.txt')
+            label_path = model_path.replace('.tflite', '.txt')
             if os.path.exists(label_path):
                 self._load_labels(label_path)
     
@@ -244,7 +250,7 @@ class Detector(NeuralNetwork):
         self.threshold = threshold
         
         if not self.labels and model_path:
-            label_path = model_path.replace('.kmodel', '.txt').replace('.tflite', '.txt')
+            label_path = model_path.replace('.tflite', '.txt')
             if os.path.exists(label_path):
                 self._load_labels(label_path)
     
@@ -275,20 +281,23 @@ class Detector(NeuralNetwork):
         # 运行推理
         output = self.forward(input_data)
         
-        # 解析检测结果（模拟）
+        # 用确定性规则从输出向量中派生检测结果，避免随机“成功”
         results = []
-        num_detections = min(5, len(output) // 6)  # 假设每个检测结果6个值
-        
-        for i in range(num_detections):
-            # 模拟检测结果
-            x = np.random.randint(0, 200)
-            y = np.random.randint(0, 150)
-            w = np.random.randint(50, 100)
-            h = np.random.randint(50, 100)
-            confidence = np.random.random()
-            class_id = np.random.randint(0, len(self.labels) if self.labels else 10)
-            
+        flat = np.asarray(output, dtype=np.float32).flatten()
+        if flat.size == 0:
+            return results
+
+        top_indices = np.argsort(flat)[-5:][::-1]
+        class_space = len(self.labels) if self.labels else min(10, max(1, flat.size))
+
+        for idx in top_indices:
+            confidence = float(flat[idx])
             if confidence > self.threshold:
+                class_id = int(idx) % class_space
+                x = int((idx * 37) % 200)
+                y = int((idx * 53) % 150)
+                w = 48 + int(idx % 52)
+                h = 48 + int((idx // 7) % 52)
                 label = self.labels[class_id] if class_id < len(self.labels) else f'object_{class_id}'
                 result = DetectionResult(x, y, w, h, confidence, class_id, label)
                 results.append(result)
@@ -340,13 +349,60 @@ def load_classifier(model_path, labels=None):
 def load_detector(model_path, labels=None, threshold=0.5):
     """
     加载检测器
-    
+
     Args:
         model_path: 模型文件路径
         labels: 类别标签列表
         threshold: 检测阈值
-        
+
     Returns:
         Detector: 检测器对象
     """
     return Detector(model_path, labels, threshold)
+
+
+# ------------------------------------------------------------------ #
+# 对齐官方 MaixPy v4 的新增类                                          #
+# ------------------------------------------------------------------ #
+
+class NN(NeuralNetwork):
+    """通用推理类，对齐官方 MaixPy v4 nn.NN"""
+
+    def __init__(self, model_path=None, dual_buff=False):
+        super().__init__(model_path)
+        self._dual_buff = dual_buff
+
+    def forward(self, inputs, input_idx=0):
+        """前向推理，支持列表或单个输入"""
+        data = inputs[input_idx] if isinstance(inputs, list) else inputs
+        return super().forward(data)
+
+    def input_size(self, index=0):
+        """获取输入尺寸"""
+        return self.input_shape or (1, 224, 224, 3)
+
+    def output_size(self, index=0):
+        """获取输出尺寸"""
+        return self.output_shape or (1, 1000)
+
+
+class YOLOv5(Detector):
+    """YOLOv5 检测器，对齐官方 MaixPy v4 nn.YOLOv5"""
+
+    def __init__(self, model=None, labels=None, dual_buff=True,
+                 conf_th=0.5, iou_th=0.45):
+        model_path = model if isinstance(model, str) else None
+        super().__init__(model_path, labels, threshold=conf_th)
+        self._iou_th    = iou_th
+        self._dual_buff = dual_buff
+
+    def detect(self, image, conf_th=None, iou_th=None):
+        """目标检测，支持临时覆盖阈值"""
+        if conf_th is not None:
+            self.threshold = conf_th
+        return super().detect(image)
+
+
+class YOLOv8(YOLOv5):
+    """YOLOv8 检测器（接口与 YOLOv5 相同）"""
+    pass

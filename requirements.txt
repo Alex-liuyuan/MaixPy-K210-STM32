@@ -17,6 +17,9 @@ kflash>=1.0.0
 # STM32相关依赖（可选）
 # pyocd>=0.30.0  # STM32 OpenOCD 支持
 
+# 可视化工具依赖
+websockets>=12.0   # tools/qemu_monitor.py 实时推送
+
 # 文档生成依赖
 mkdocs>=1.2.0
 mkdocs-material>=7.0.0

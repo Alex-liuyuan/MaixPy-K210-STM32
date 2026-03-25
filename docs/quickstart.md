@@ -1,167 +1,92 @@
-# MaixPy-K210-STM32 快速入门指南
+# 快速开始
 
-## 概述
+## 当前建议的验证路径
 
-MaixPy-K210-STM32 是基于 MaixPy v4 架构的跨平台开发框架，提供对 K210 和 STM32 开发板的统一 Python API 支持。
+先走这条闭环：
 
-## 支持的硬件平台
+- 板卡：`stm32f407_nucleo`
+- 系统：`RT-Thread Nano`
+- 调试串口：`USART2 @ 115200`
+- 烧录方式：`ST-Link + OpenOCD`
 
-### K210 系列
-- Sipeed Maix-I Dock
-- Sipeed Maix-I Go  
-- Sipeed Maix-I Cube
-- Sipeed Maix-I BiT
-- Sipeed Maix-I Nano
+## 依赖
 
-### STM32 系列
-- STM32F407 Discovery
-- STM32F767 Nucleo
-- STM32H743 Nucleo
-- 自定义 STM32 开发板
+- `cmake >= 3.20`
+- `arm-none-eabi-gcc`
+- `openocd`
+- `python3`
 
-## 环境准备
-
-### 基础环境
+## 构建真板固件
 
 ```bash
-# 安装Python依赖
-pip install -r requirements.txt
-
-# 安装构建工具
-pip install cmake
+python3 project.py build -p rtthread
 ```
 
-### K210 开发环境
+产物位于：
+
+- `build/rtthread/MaixPy_rtthread.elf`
+- `build/rtthread/MaixPy_rtthread.bin`
+- `build/rtthread/MaixPy_rtthread.hex`
+
+## 烧录真板
 
 ```bash
-# 安装K210烧录工具
-pip install kflash
-
-# 下载K210工具链
-# 参考: https://github.com/kendryte/kendryte-gnu-toolchain
+python3 project.py flash -p rtthread
 ```
 
-### STM32 开发环境
+## 串口监视
 
 ```bash
-# 安装STM32CubeIDE或使用ARM工具链
-# 下载地址: https://www.st.com/en/development-tools/stm32cubeide.html
-
-# 或使用ARM GCC工具链
-sudo apt-get install gcc-arm-none-eabi
+python3 project.py monitor -p rtthread -d /dev/ttyACM0
 ```
 
-## 编译和烧录
-
-### K210 平台
+## 构建 QEMU 固件
 
 ```bash
-# 配置K210平台
-python project.py menuconfig -p k210
-
-# 编译固件
-python project.py build -p k210
-
-# 烧录到开发板
-python project.py flash -p k210 -d /dev/ttyUSB0
+python3 project.py build -p sim
 ```
 
-### STM32 平台
+## 运行 QEMU
 
 ```bash
-# 配置STM32F407平台
-python project.py menuconfig -p stm32f407
-
-# 编译固件
-python project.py build -p stm32f407
-
-# 烧录到开发板
-python project.py flash -p stm32f407 -d COM3
+python3 project.py monitor -p sim
 ```
 
-## 第一个程序
+或者直接运行：
 
-### 基础示例
-
-```python
-from maix import camera, display, app, time
-
-# 初始化摄像头和显示器
-cam = camera.Camera(320, 240)
-disp = display.Display()
-
-while not app.need_exit():
-    # 获取图像
-    img = cam.read()
-    
-    # 显示图像
-    disp.show(img)
-    
-    # 计算FPS
-    fps = time.fps()
-    print(f"FPS: {fps:.2f}")
+```bash
+qemu-system-arm \
+  -machine olimex-stm32-h405 \
+  -nographic \
+  -semihosting \
+  -semihosting-config enable=on,target=native \
+  -kernel build/sim/MaixPy_sim.elf \
+  -no-reboot
 ```
 
-### GPIO 控制
+## 预期现象
 
-```python
-from maix import GPIO, time
+真板和 QEMU 都会进入统一的产品运行时，并输出类似：
 
-# 初始化LED
-led = GPIO(0, GPIO.MODE_OUTPUT)
-
-# 闪烁LED
-while True:
-    led.on()
-    time.sleep_ms(500)
-    led.off()
-    time.sleep_ms(500)
+```text
+[BOOT] MaixPy Nano 0.1.0
+[BOOT] Runtime: ...
+[CAP] storage=... python_vm=... model_runtime=...
+[APP] heartbeat=...
 ```
 
-### AI 图像分类
+## FinSH 命令
 
-```python
-from maix import camera, display, nn
-
-# 加载分类模型
-classifier = nn.Classifier("/flash/mobilenet.kmodel")
-
-# 初始化摄像头
-cam = camera.Camera(224, 224)
-disp = display.Display()
-
-while True:
-    img = cam.read()
-    
-    # 运行分类
-    results = classifier.classify(img)
-    
-    # 显示结果
-    if results:
-        label = results[0][2]
-        confidence = results[0][1]
-        img.draw_string(10, 10, f"{label}: {confidence:.3f}")
-    
-    disp.show(img)
+```text
+maix_info
+maix_state
 ```
 
-## 常见问题
+## 目前还没完成
 
-### Q: 如何切换平台？
-A: 使用 `python project.py menuconfig -p <platform>` 重新配置目标平台。
+以下能力仍未完成，看到 `planned` 或 `unavailable` 属于真实状态，不是故障：
 
-### Q: 烧录失败怎么办？
-A: 检查串口权限、波特率设置和开发板连接。
-
-### Q: 模型加载失败？
-A: 确认模型格式是否与平台匹配（K210用.kmodel，STM32用.tflite）。
-
-### Q: 如何添加新的硬件支持？
-A: 参考 `components/drivers/` 目录下的平台实现，创建新的HAL驱动。
-
-## 更多资源
-
-- [API 参考手册](api/index.md)
-- [硬件适配指南](hardware_porting.md)
-- [示例代码](../examples/)
-- [常见问题解答](faq.md)
+- Python VM
+- `boot.py` / `main.py`
+- 文件系统与模型加载
+- 摄像头 / 显示 / AI 推理闭环

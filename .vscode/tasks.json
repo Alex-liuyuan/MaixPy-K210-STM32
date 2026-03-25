@@ -1,0 +1,95 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Sim Firmware",
+      "type": "shell",
+      "command": "cmake --build ${workspaceFolder}/build/sim --parallel 4",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Configure Sim Build",
+      "type": "shell",
+      "command": "cmake -S ${workspaceFolder}/sim -B ${workspaceFolder}/build/sim",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Clean Sim Build",
+      "type": "shell",
+      "command": "rm -rf ${workspaceFolder}/build/sim",
+      "group": "build"
+    },
+    {
+      "label": "QEMU: Start GDB Server",
+      "type": "shell",
+      "command": "qemu-system-arm -machine olimex-stm32-h405 -nographic -semihosting -kernel ${workspaceFolder}/build/sim/MaixPy_sim.elf -no-reboot -S -gdb tcp::3333",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "label": "QEMU"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^qemu",
+          "endsPattern": "^$"
+        }
+      }
+    },
+    {
+      "label": "Run Pytest",
+      "type": "shell",
+      "command": "python3 -m pytest ${workspaceFolder}/tests/ -v",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Viz: 生成滤波对比 HTML",
+      "type": "shell",
+      "command": "python3 ${workspaceFolder}/tools/filter_viz.py",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Viz: 启动 QEMU 实时监控",
+      "type": "shell",
+      "command": "python3 ${workspaceFolder}/tools/qemu_monitor.py",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "label": "QEMU Monitor"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[HTTP\\]",
+          "endsPattern": "^$"
+        }
+      }
+    }
+  ]
+}

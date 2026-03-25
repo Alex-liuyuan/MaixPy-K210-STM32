@@ -6,6 +6,10 @@ extern "C" {
 #endif
 
 #include "hal_common.h"
+#include "hal_gpio.h"
+#include "hal_spi.h"
+#include "hal_i2c.h"
+#include "hal_uart.h"
 
 /**
  * @brief STM32平台硬件抽象层

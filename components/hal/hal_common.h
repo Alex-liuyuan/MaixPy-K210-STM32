@@ -27,13 +27,13 @@ typedef enum {
 
 // 错误码定义
 typedef enum {
-    HAL_OK = 0,
-    HAL_ERROR = -1,
-    HAL_BUSY = -2,
-    HAL_TIMEOUT = -3,
-    HAL_INVALID_PARAM = -4,
-    HAL_NOT_SUPPORTED = -5,
-    HAL_NO_MEMORY = -6
+    MAIX_HAL_OK = 0,
+    MAIX_HAL_ERROR = -1,
+    MAIX_HAL_BUSY = -2,
+    MAIX_HAL_TIMEOUT = -3,
+    MAIX_HAL_INVALID_PARAM = -4,
+    MAIX_HAL_NOT_SUPPORTED = -5,
+    MAIX_HAL_NO_MEMORY = -6
 } hal_ret_t;
 
 // GPIO定义
@@ -96,8 +96,8 @@ typedef struct {
 
 // I2C定义
 typedef enum {
-    HAL_I2C_MODE_MASTER = 0,
-    HAL_I2C_MODE_SLAVE
+    MAIX_HAL_I2C_MODE_MASTER = 0,
+    MAIX_HAL_I2C_MODE_SLAVE
 } hal_i2c_mode_t;
 
 typedef struct {

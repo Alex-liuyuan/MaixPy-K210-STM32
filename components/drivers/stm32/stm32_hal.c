@@ -31,13 +31,13 @@ static GPIO_TypeDef* gpio_port_map[] = {
 
 // STM32 GPIO实现
 hal_ret_t stm32_gpio_init(uint32_t pin, const hal_gpio_config_t* config) {
-    if (!config) return HAL_INVALID_PARAM;
+    if (!config) return MAIX_HAL_INVALID_PARAM;
     
     uint32_t port_num = (pin >> 16) & 0xFFFF;
     uint32_t pin_num = pin & 0xFFFF;
     
     if (port_num >= STM32_GPIO_PORT_MAX || pin_num >= STM32_GPIO_PIN_MAX) {
-        return HAL_INVALID_PARAM;
+        return MAIX_HAL_INVALID_PARAM;
     }
     
     // 使能GPIO时钟
@@ -46,7 +46,7 @@ hal_ret_t stm32_gpio_init(uint32_t pin, const hal_gpio_config_t* config) {
         case STM32_GPIO_PORT_B: __HAL_RCC_GPIOB_CLK_ENABLE(); break;
         case STM32_GPIO_PORT_C: __HAL_RCC_GPIOC_CLK_ENABLE(); break;
         case STM32_GPIO_PORT_D: __HAL_RCC_GPIOD_CLK_ENABLE(); break;
-        default: return HAL_INVALID_PARAM;
+        default: return MAIX_HAL_INVALID_PARAM;
     }
     
     // 配置GPIO
@@ -57,20 +57,53 @@ hal_ret_t stm32_gpio_init(uint32_t pin, const hal_gpio_config_t* config) {
         case HAL_GPIO_MODE_INPUT: GPIO_InitStruct.Mode = GPIO_MODE_INPUT; break;
         case HAL_GPIO_MODE_OUTPUT: GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; break;
         case HAL_GPIO_MODE_AF: GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; break;
-        default: return HAL_INVALID_PARAM;
+        default: return MAIX_HAL_INVALID_PARAM;
     }
     
     HAL_GPIO_Init(gpio_port_map[port_num], &GPIO_InitStruct);
-    return HAL_OK;
+    return MAIX_HAL_OK;
 }
 
 hal_ret_t stm32_gpio_write(uint32_t pin, hal_gpio_state_t state) {
     uint32_t port_num = (pin >> 16) & 0xFFFF;
     uint32_t pin_num = pin & 0xFFFF;
-    
+
     GPIO_PinState pin_state = (state == HAL_GPIO_PIN_SET) ? GPIO_PIN_SET : GPIO_PIN_RESET;
     HAL_GPIO_WritePin(gpio_port_map[port_num], (1 << pin_num), pin_state);
-    return HAL_OK;
+    return MAIX_HAL_OK;
+}
+
+hal_gpio_state_t stm32_gpio_read(uint32_t pin) {
+    uint32_t port_num = (pin >> 16) & 0xFFFF;
+    uint32_t pin_num = pin & 0xFFFF;
+
+    if (port_num >= STM32_GPIO_PORT_MAX || pin_num >= STM32_GPIO_PIN_MAX) {
+        return HAL_GPIO_PIN_RESET;
+    }
+    GPIO_PinState s = HAL_GPIO_ReadPin(gpio_port_map[port_num], (1 << pin_num));
+    return (s == GPIO_PIN_SET) ? HAL_GPIO_PIN_SET : HAL_GPIO_PIN_RESET;
+}
+
+hal_ret_t stm32_gpio_toggle(uint32_t pin) {
+    uint32_t port_num = (pin >> 16) & 0xFFFF;
+    uint32_t pin_num = pin & 0xFFFF;
+
+    if (port_num >= STM32_GPIO_PORT_MAX || pin_num >= STM32_GPIO_PIN_MAX) {
+        return MAIX_HAL_INVALID_PARAM;
+    }
+    HAL_GPIO_TogglePin(gpio_port_map[port_num], (1 << pin_num));
+    return MAIX_HAL_OK;
+}
+
+hal_ret_t stm32_gpio_deinit(uint32_t pin) {
+    uint32_t port_num = (pin >> 16) & 0xFFFF;
+    uint32_t pin_num = pin & 0xFFFF;
+
+    if (port_num >= STM32_GPIO_PORT_MAX || pin_num >= STM32_GPIO_PIN_MAX) {
+        return MAIX_HAL_INVALID_PARAM;
+    }
+    HAL_GPIO_DeInit(gpio_port_map[port_num], (1 << pin_num));
+    return MAIX_HAL_OK;
 }
 
 // STM32平台初始化
@@ -82,13 +115,15 @@ hal_ret_t stm32_hal_init(void) {
 // STM32平台操作注册
 hal_ret_t stm32_register_hal_ops(void) {
     static const hal_gpio_ops_t gpio_ops = {
-        .init = stm32_gpio_init,
-        .write = stm32_gpio_write,
-        // 其他操作函数...
+        .init   = stm32_gpio_init,
+        .deinit = stm32_gpio_deinit,
+        .write  = stm32_gpio_write,
+        .read   = stm32_gpio_read,
+        .toggle = stm32_gpio_toggle,
     };
     hal_gpio_register_ops(&gpio_ops);
-    
-    return HAL_OK;
+
+    return MAIX_HAL_OK;
 }
 
 #endif /* STM32 platforms */

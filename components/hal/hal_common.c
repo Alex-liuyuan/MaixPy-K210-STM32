@@ -5,6 +5,7 @@
 #include "hal_uart.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /**
  * @brief HAL通用实现
@@ -37,13 +38,13 @@ static hal_platform_t detect_platform(void) {
 // HAL初始化
 hal_ret_t hal_init(void) {
     if (g_hal_initialized) {
-        return HAL_OK;
+        return MAIX_HAL_OK;
     }
     
     // 检测平台
     g_platform = detect_platform();
     if (g_platform == HAL_PLATFORM_UNKNOWN) {
-        return HAL_NOT_SUPPORTED;
+        return MAIX_HAL_NOT_SUPPORTED;
     }
     
     // 设置默认内存操作
@@ -68,11 +69,11 @@ hal_ret_t hal_init(void) {
             // Linux模拟初始化
             break;
         default:
-            return HAL_NOT_SUPPORTED;
+            return MAIX_HAL_NOT_SUPPORTED;
     }
     
     g_hal_initialized = true;
-    return HAL_OK;
+    return MAIX_HAL_OK;
 }
 
 // 获取平台信息
