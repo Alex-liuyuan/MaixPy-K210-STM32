@@ -6,6 +6,10 @@ set(HAL_SRCS
     hal_spi.c
     hal_i2c.c
     hal_uart.c
+    hal_pwm.c
+    hal_adc.c
+    hal_display.c
+    hal_camera.c
 )
 
 add_library(maix_hal STATIC ${HAL_SRCS})

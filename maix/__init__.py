@@ -7,8 +7,8 @@ import os
 import time as _time
 from pathlib import Path
 
-# 版本信息
-__version__ = "0.1.0"
+# 版本信息 —— 与 maix/version.py 保持一致
+from .version import __version__
 
 def _normalize_platform_name(name):
     """将平台名归一化为上层 API 使用的类别。"""
@@ -90,12 +90,7 @@ class Time:
     
     def ticks_ms(self):
         """获取系统滴答(毫秒)"""
-        if _current_platform == 'stm32':
-            # STM32实现
-            return int(_time.perf_counter() * 1000)
-        else:
-            # Linux/其他平台
-            return int(_time.perf_counter() * 1000)
+        return int(_time.perf_counter() * 1000)
     
     def sleep_ms(self, ms):
         """毫秒延时"""
@@ -254,11 +249,19 @@ class Sys:
     """系统信息接口"""
     
     def device_id(self):
-        """获取设备ID"""
+        """获取设备ID（STM32读取UID寄存器，其他平台返回主机名哈希）"""
         if _current_platform == 'stm32':
-            return "stm32_device"
-        else:
-            return "unknown_device"
+            try:
+                import _maix_hal
+                uid = getattr(_maix_hal, 'device_uid', None)
+                if callable(uid):
+                    return uid()
+            except ImportError:
+                pass
+            return "stm32_unknown"
+        import hashlib
+        import platform as _plat
+        return hashlib.md5(_plat.node().encode()).hexdigest()[:16]
     
     def platform(self):
         """获取平台信息"""

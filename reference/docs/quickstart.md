@@ -25,6 +25,13 @@
 - `openocd`
 - `python3`
 
+### 工具链获取
+
+工具链二进制不再随仓库分发，需自行下载并放置到 `third_party/toolchains/` 目录：
+
+- **STM32 (ARM)**：从 [ARM 官网](https://developer.arm.com/downloads/-/gnu-rm) 下载 `arm-none-eabi-gcc`，或通过包管理器安装（`apt install gcc-arm-none-eabi`）
+- **K210 (RISC-V)**：从 [Kendryte 官网](https://kendryte.com/) 或 [GitHub Releases](https://github.com/kendryte/kendryte-gnu-toolchain/releases) 下载 RISC-V 工具链，解压到 `third_party/toolchains/kendryte-toolchain/`
+
 ## 构建真板固件
 
 ```bash
@@ -91,6 +98,46 @@ QEMU 平台入口源码位于：
 [app main] hello from bundled SYSU_AIOTOS app
 [MODEL] backend=...
 [APP] heartbeat=...
+```
+
+## Python API 快速体验
+
+在 Linux 主机上可以直接使用 `maix` 包（模拟模式）：
+
+```bash
+pip install -e .
+python3 -c "from maix import *; print(version())"
+```
+
+基础示例：
+
+```python
+from maix import GPIO, time
+from maix.camera import Camera
+from maix.display import Display
+
+# GPIO
+led = GPIO(0x00000005, GPIO.Mode.OUT)
+led.on()
+time.sleep_ms(500)
+led.off()
+
+# 摄像头 + 显示
+cam = Camera(320, 240, "RGB888")
+disp = Display(320, 240)
+img = cam.read()
+img.draw_string(10, 10, "Hello MaixPy", color=(255, 255, 255))
+disp.show(img)
+cam.close()
+disp.close()
+```
+
+更多 API 详见 [API 参考手册](api_reference.md)。
+
+## 运行测试
+
+```bash
+python3 -m pytest tests/ -v
 ```
 
 ## FinSH 命令

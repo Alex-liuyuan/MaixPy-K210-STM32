@@ -10,3 +10,9 @@ __pycache__/
 maix/__pycache__/
 tests/__pycache__/
 tools/__pycache__/
+
+# 工具链二进制（不应提交到 git，需自行下载）
+third_party/toolchains/
+third_party/archives/
+*.tar.bz2
+*.tar.gz

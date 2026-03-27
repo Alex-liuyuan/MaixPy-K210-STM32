@@ -1,3 +1,3 @@
-"""SYSU_AIOTOS 版本信息。"""
+"""MaixPy Nano RT-Thread 版本信息。"""
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"

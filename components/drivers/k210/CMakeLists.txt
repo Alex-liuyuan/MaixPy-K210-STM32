@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 
 set(K210_SRCS
     k210_hal.c
+    k210_gpio.c
+    k210_spi.c
+    k210_i2c.c
+    k210_uart.c
 )
 
 add_library(k210_drivers STATIC ${K210_SRCS})

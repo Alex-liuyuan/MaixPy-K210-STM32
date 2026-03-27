@@ -165,16 +165,33 @@ class Image:
         return self
     
     def draw_circle(self, x, y, radius, color=(255, 0, 0), thickness=1):
-        """
-        绘制圆形
-        
+        """绘制圆形（中点画圆算法，numpy实现）
+
         Args:
             x, y: 圆心坐标
             radius: 半径
             color: 颜色 (R, G, B)
             thickness: 线条粗细
         """
-        print(f"[Image] 绘制圆形: ({x}, {y}), 半径: {radius}, 颜色: {color}")
+        if not isinstance(self.data, np.ndarray) or len(self.data.shape) != 3:
+            return self
+        c = np.array(color, dtype=np.uint8)
+        t = max(1, thickness)
+        r_outer = radius
+        r_inner = max(0, radius - t)
+
+        # 生成圆心周围的坐标网格
+        y_lo = max(0, y - r_outer - 1)
+        y_hi = min(self.height, y + r_outer + 2)
+        x_lo = max(0, x - r_outer - 1)
+        x_hi = min(self.width, x + r_outer + 2)
+        if y_lo >= y_hi or x_lo >= x_hi:
+            return self
+
+        ys, xs = np.mgrid[y_lo:y_hi, x_lo:x_hi]
+        dist_sq = (xs - x) ** 2 + (ys - y) ** 2
+        mask = (dist_sq <= r_outer ** 2) & (dist_sq >= r_inner ** 2)
+        self.data[y_lo:y_hi, x_lo:x_hi][mask] = c
         return self
     
     def draw_string(self, x, y, text, color=(255, 255, 255), scale=1):
