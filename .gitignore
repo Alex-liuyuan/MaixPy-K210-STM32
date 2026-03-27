@@ -4,6 +4,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.a
+.vscode/
+.spec-workflow/
 
 maix/__pycache__/
 tests/__pycache__/
