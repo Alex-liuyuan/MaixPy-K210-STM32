@@ -1,6 +1,6 @@
 # 项目结构说明
 
-当前仓库按“框架实现 / 板级实现 / 主机工具 / 参考源码”四类组织，避免把示例、缓存、构建产物和正式代码混在一起。
+当前仓库按“系统实现 / 参考资料 / 测试回归”三块职责组织，避免把示例、文档、缓存、构建产物和正式代码混在一起。
 
 ## 顶层目录
 
@@ -21,12 +21,6 @@
   `drivers/k210/` RISC-V K210 参考驱动
   `micropython_rtthread/` RT-Thread Nano 下的 MicroPython 端口
 
-- `docs/`
-  设计、结构、移植和快速开始文档。
-
-- `examples/`
-  面向上层 API 的最小示例脚本。这里保留的是“用户示例”，不是开发残留脚本。
-
 - `maix/`
   主机侧 Python API 包与工具封装，用于接口整理和测试。
 
@@ -35,6 +29,11 @@
   `platforms/sim/` 为 QEMU 仿真入口
   `platforms/k210/` 为 K210 实验性固件入口
   `platforms/stm32/` 为 STM32 专用启动文件与链接脚本
+
+- `reference/`
+  参考资料总目录。
+  `reference/docs/` 放设计、结构、移植和快速开始文档
+  `reference/examples/` 放面向上层 API 的最小示例脚本
 
 - `tests/`
   主机侧回归测试与 mock HAL。

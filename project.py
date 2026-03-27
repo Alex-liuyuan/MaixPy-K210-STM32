@@ -140,7 +140,7 @@ def main():
         print("  python project.py flash -p k210 -d /dev/ttyUSB0")
         print("  python project.py monitor -p rtthread -d /dev/ttyACM0")
         print("  python project.py k210-probe")
-        print("  python project.py bundle --app-dir examples/basic --model /tmp/model.tflite --labels /tmp/labels.txt")
+        print("  python project.py bundle --app-dir reference/examples/basic --model /tmp/model.tflite --labels /tmp/labels.txt")
         print("  python project.py bundle-info")
         print("\n说明:")
         print("  当前项目面向 ARM Cortex-M 与 RISC-V，统一使用 RT-Thread Nano。")

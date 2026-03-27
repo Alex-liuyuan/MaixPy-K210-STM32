@@ -54,23 +54,20 @@
 
 更正式的设计说明见：
 
-- `docs/architecture.md`
-- `docs/board_schema.md`
-- `docs/project_layout.md`
+- `reference/docs/architecture.md`
+- `reference/docs/board_schema.md`
+- `reference/docs/project_layout.md`
 
 ## 仓库结构
 
 ```text
-runtime/                          产品运行时骨架
 boards/                           板卡元数据注册
 cmake/                            CMake 与工具链配置
-components/drivers/stm32/         ARM Cortex-M 参考驱动实现
-components/drivers/k210/          RISC-V K210 参考驱动实现
-components/hal/                   通用 HAL 接口（仍需继续抽象）
-docs/                             当前产品文档
-examples/                         面向上层 API 的示例脚本
+components/                       核心组件实现
 maix/                             主机侧 API 与测试辅助
 platforms/                        平台专用入口（STM32 / QEMU / K210）
+reference/                        参考文档与示例
+runtime/                          产品运行时骨架
 tests/                            主机回归测试
 third_party/                      第三方源码、工具链与离线归档
 tools/                            构建 / 烧录 / 监视工具
