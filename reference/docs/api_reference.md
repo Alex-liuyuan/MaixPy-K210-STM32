@@ -229,3 +229,107 @@ ma.reset()
 | `KalmanFilter1D(q, r)` | 过程/测量噪声 | 高斯噪声 |
 | `DeadZoneFilter(threshold)` | 死区阈值 | 抖动抑制 |
 | `LimitFilter(max_delta)` | 最大变化量 | 突变过滤 |
+
+## maix.audio — 音频采集与播放
+
+### Audio
+
+```python
+from maix.audio import Audio, AudioFrame
+
+a = Audio(sample_rate=16000, channels=1, format="PCM_S16", frame_size=512)
+data = a.read()           # 返回 int16 numpy 数组，长度 = frame_size
+data = a.read(samples=1024)  # 指定采样数
+a.write(data)
+a.start()
+a.stop()
+a.set_volume(80)
+vol = a.get_volume()
+a.close()
+```
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `sample_rate` | 16000 | 采样率 (8000/16000/44100/48000) |
+| `channels` | 1 | 声道数 (1=mono, 2=stereo) |
+| `format` | `"PCM_S16"` | 音频格式 (`"PCM_S16"`, `"PCM_S32"`, `"PDM"`) |
+| `frame_size` | 512 | 每帧采样数 |
+
+### AudioFrame
+
+```python
+frame = AudioFrame(data, sample_rate=16000, channels=1)
+ms = frame.duration_ms       # 帧时长（毫秒）
+b = frame.to_bytes()         # 转为 bytes
+f = frame.to_float()         # 归一化到 [-1.0, 1.0]
+```
+
+## maix.audio_feature — 音频特征提取
+
+纯 numpy 实现，零外部依赖。
+
+```python
+from maix.audio_feature import (
+    compute_mfcc, compute_mel_spectrogram, compute_spectrogram,
+    compute_energy, pre_emphasis,
+)
+import numpy as np
+
+signal = np.zeros(16000, dtype=np.float64)
+
+# MFCC
+mfcc = compute_mfcc(signal, sample_rate=16000, n_mfcc=13,
+                     n_fft=512, hop_length=160, n_mels=40)
+# → (n_frames, 13)
+
+# Mel 频谱图
+mel = compute_mel_spectrogram(signal, sample_rate=16000,
+                               n_fft=512, hop_length=160, n_mels=40)
+# → (n_frames, 40) 对数能量
+
+# 短时傅里叶变换频谱图
+spec = compute_spectrogram(signal, n_fft=512, hop_length=160)
+# → (n_frames, 257) 幅度谱
+
+# 帧能量
+energy = compute_energy(signal, frame_size=512, hop_length=160)
+# → (n_frames,)
+
+# 预加重
+emphasized = pre_emphasis(signal, coeff=0.97)
+```
+
+## maix.nn — 音频 AI 推理类
+
+### SpeechKWS（语音关键词识别）
+
+```python
+from maix.nn import SpeechKWS
+
+kws = SpeechKWS(keywords=["yes", "no", "stop", "go"], threshold=0.8,
+                sample_rate=16000, frame_duration_ms=1000)
+results = kws.recognize(audio_data)
+# → [("yes", 0.92), ("no", 0.05), ...]
+```
+
+### AudioClassifier（音频事件分类）
+
+```python
+from maix.nn import AudioClassifier
+
+clf = AudioClassifier(labels=["speech", "music", "noise"], threshold=0.5,
+                      sample_rate=16000, clip_duration_ms=1000)
+results = clf.classify(audio_data)
+# → [(0, 0.85, "speech"), (2, 0.10, "noise"), ...]
+```
+
+### VAD（语音活动检测）
+
+```python
+from maix.nn import VAD
+
+vad = VAD(threshold=0.5, sample_rate=16000, frame_duration_ms=30)
+is_sp = vad.is_speech(audio_frame)   # → bool
+segments = vad.process(audio_data)
+# → [{"start_ms": 0, "end_ms": 300, "confidence": 0.9}, ...]
+```

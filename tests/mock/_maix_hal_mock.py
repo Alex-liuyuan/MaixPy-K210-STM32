@@ -340,3 +340,50 @@ class _AdcModule:
         return (index * 256 + adc_id * 17) % 4096
 
 adc = _AdcModule()
+
+# ------------------------------------------------------------------ #
+# Audio                                                                #
+# ------------------------------------------------------------------ #
+_audio_open = False
+_audio_sr = 16000
+_audio_ch = 1
+_audio_fmt = 0
+_audio_frame_size = 512
+_audio_volume = 80
+
+def audio_open(sample_rate=16000, channels=1, format=0, frame_size=512):
+    global _audio_open, _audio_sr, _audio_ch, _audio_fmt, _audio_frame_size
+    _audio_sr = sample_rate
+    _audio_ch = channels
+    _audio_fmt = format
+    _audio_frame_size = frame_size
+    _audio_open = True
+    return 0
+
+def audio_close():
+    global _audio_open
+    _audio_open = False
+    return 0
+
+def audio_start():
+    return 0
+
+def audio_stop():
+    return 0
+
+def audio_read(samples=512):
+    """生成模拟音频：440Hz 正弦波（确定性，用于测试）"""
+    t = np.arange(samples) / _audio_sr
+    signal = (np.sin(2 * np.pi * 440 * t) * 16000).astype(np.int16)
+    return signal
+
+def audio_write(data):
+    return 0
+
+def audio_set_volume(vol):
+    global _audio_volume
+    _audio_volume = max(0, min(100, vol))
+    return 0
+
+def audio_get_volume():
+    return _audio_volume

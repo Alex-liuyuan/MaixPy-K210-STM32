@@ -450,3 +450,215 @@ class YOLOv5(Detector):
 class YOLOv8(YOLOv5):
     """YOLOv8 检测器（接口与 YOLOv5 相同）"""
     pass
+
+
+# ------------------------------------------------------------------ #
+# 音频 AI 推理类                                                       #
+# ------------------------------------------------------------------ #
+
+class SpeechKWS(NeuralNetwork):
+    """语音关键词识别 (Keyword Spotting)"""
+
+    def __init__(self, model_path=None, keywords=None, threshold=0.8,
+                 sample_rate=16000, frame_duration_ms=1000):
+        self.keywords = keywords or ["yes", "no", "stop", "go"]
+        self.threshold = threshold
+        self.sample_rate = sample_rate
+        self.frame_duration_ms = frame_duration_ms
+        super().__init__(model_path)
+        if not self.loaded:
+            self._load_mock_model(model_path)
+
+    def _load_mock_model(self, model_path):
+        n_kw = len(self.keywords)
+        self.input_shape = (1, int(self.sample_rate * self.frame_duration_ms / 1000))
+        self.output_shape = (n_kw,)
+        self.loaded = True
+
+    def recognize(self, audio_data):
+        """
+        关键词识别
+
+        Args:
+            audio_data: 一维音频信号 (int16 或 float)
+
+        Returns:
+            list[(keyword, confidence)] 按置信度降序
+        """
+        if not self.loaded:
+            raise RuntimeError("模型未加载")
+
+        from .audio_feature import pre_emphasis, compute_mfcc
+
+        signal = np.asarray(audio_data, dtype=np.float32)
+        signal = pre_emphasis(signal)
+        mfcc = compute_mfcc(signal, self.sample_rate)
+
+        if _current_platform == 'stm32' and not _running_on_host():
+            output = self.forward(mfcc.flatten())
+        else:
+            output = self._forward_kws_mock(mfcc)
+
+        results = []
+        for i, kw in enumerate(self.keywords):
+            conf = float(output[i]) if i < len(output) else 0.0
+            results.append((kw, conf))
+        return sorted(results, key=lambda x: x[1], reverse=True)
+
+    def _forward_kws_mock(self, mfcc):
+        """基于 MFCC 均值确定性选择关键词"""
+        n_kw = len(self.keywords)
+        mean_val = float(np.mean(mfcc))
+        var_val = float(np.var(mfcc))
+        top_idx = int(abs(mean_val) * 100 + var_val * 10) % max(n_kw, 1)
+        logits = np.full(n_kw, -2.0, dtype=np.float32)
+        logits[top_idx] = 3.0 + min(var_val, 5.0)
+        return _softmax(logits)
+
+
+class AudioClassifier(NeuralNetwork):
+    """音频事件分类（环境声、婴儿哭声、玻璃破碎等）"""
+
+    def __init__(self, model_path=None, labels=None, threshold=0.5,
+                 sample_rate=16000, clip_duration_ms=1000):
+        self.labels = labels or []
+        self.threshold = threshold
+        self.sample_rate = sample_rate
+        self.clip_duration_ms = clip_duration_ms
+        super().__init__(model_path)
+        if not self.loaded:
+            self._load_mock_model(model_path)
+
+    def _load_mock_model(self, model_path):
+        n_cls = max(len(self.labels), 10)
+        self.input_shape = (1, int(self.sample_rate * self.clip_duration_ms / 1000))
+        self.output_shape = (n_cls,)
+        self.loaded = True
+
+    def classify(self, audio_data):
+        """
+        音频分类
+
+        Args:
+            audio_data: 一维音频信号
+
+        Returns:
+            list[(class_id, confidence, label)] 按置信度降序
+        """
+        if not self.loaded:
+            raise RuntimeError("模型未加载")
+
+        from .audio_feature import compute_mel_spectrogram
+
+        signal = np.asarray(audio_data, dtype=np.float32)
+        mel = compute_mel_spectrogram(signal, self.sample_rate)
+
+        if _current_platform == 'stm32' and not _running_on_host():
+            output = self.forward(mel.flatten())
+        else:
+            output = _mock_class_output(mel, self.output_shape)
+
+        results = []
+        for i, conf in enumerate(output):
+            conf_f = float(conf)
+            if conf_f >= self.threshold or i < 3:
+                label = self.labels[i] if i < len(self.labels) else f"class_{i}"
+                results.append((i, conf_f, label))
+        return sorted(results, key=lambda x: x[1], reverse=True)
+
+
+class VAD(NeuralNetwork):
+    """语音活动检测 (Voice Activity Detection)"""
+
+    def __init__(self, model_path=None, threshold=0.5,
+                 sample_rate=16000, frame_duration_ms=30):
+        self.threshold = threshold
+        self.sample_rate = sample_rate
+        self.frame_duration_ms = frame_duration_ms
+        self._frame_samples = int(sample_rate * frame_duration_ms / 1000)
+        super().__init__(model_path)
+        if not self.loaded:
+            self._load_mock_model(model_path)
+
+    def _load_mock_model(self, model_path):
+        self.input_shape = (1, self._frame_samples)
+        self.output_shape = (1,)
+        self.loaded = True
+
+    def is_speech(self, audio_frame):
+        """
+        判断单帧是否为语音
+
+        Args:
+            audio_frame: 一维音频帧数据
+
+        Returns:
+            bool
+        """
+        if not self.loaded:
+            raise RuntimeError("模型未加载")
+        frame = np.asarray(audio_frame, dtype=np.float32)
+        if _current_platform == 'stm32' and not _running_on_host():
+            output = self.forward(frame)
+            return float(output[0]) > self.threshold
+        # mock: 基于帧能量阈值
+        energy = float(np.mean(frame ** 2))
+        return energy > self.threshold
+
+    def process(self, audio_data):
+        """
+        处理完整音频，返回语音段列表
+
+        Args:
+            audio_data: 一维音频信号
+
+        Returns:
+            list[dict] — [{start_ms, end_ms, confidence}, ...]
+        """
+        if not self.loaded:
+            raise RuntimeError("模型未加载")
+
+        signal = np.asarray(audio_data, dtype=np.float32)
+        fs = self._frame_samples
+        n_frames = max(1, len(signal) // fs)
+
+        # 逐帧检测
+        frame_flags = []
+        energies = []
+        for i in range(n_frames):
+            frame = signal[i * fs:(i + 1) * fs]
+            energy = float(np.mean(frame ** 2))
+            energies.append(energy)
+
+        if not energies:
+            return []
+
+        mean_energy = float(np.mean(energies))
+        # mock 阈值：能量 > 均值 → speech
+        threshold = max(mean_energy, self.threshold)
+
+        for e in energies:
+            frame_flags.append(e > threshold)
+
+        # 合并相邻语音段
+        segments = []
+        in_speech = False
+        start_idx = 0
+        for i, is_sp in enumerate(frame_flags):
+            if is_sp and not in_speech:
+                start_idx = i
+                in_speech = True
+            elif not is_sp and in_speech:
+                segments.append({
+                    "start_ms": start_idx * self.frame_duration_ms,
+                    "end_ms": i * self.frame_duration_ms,
+                    "confidence": float(np.mean(energies[start_idx:i])),
+                })
+                in_speech = False
+        if in_speech:
+            segments.append({
+                "start_ms": start_idx * self.frame_duration_ms,
+                "end_ms": n_frames * self.frame_duration_ms,
+                "confidence": float(np.mean(energies[start_idx:n_frames])),
+            })
+        return segments

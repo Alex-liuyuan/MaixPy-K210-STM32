@@ -10,6 +10,7 @@ set(HAL_SRCS
     hal_adc.c
     hal_display.c
     hal_camera.c
+    hal_audio.c
 )
 
 add_library(maix_hal STATIC ${HAL_SRCS})

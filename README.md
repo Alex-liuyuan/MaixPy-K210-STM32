@@ -14,8 +14,9 @@
 │  from maix.display import Display                   │
 ├─────────────────────────────────────────────────────┤
 │  maix Python 包                                      │
-│  camera · display · nn · gpio · spi · i2c · uart    │
-│  pwm · adc · filter · pinmap · err                  │
+│  camera · display · nn · audio · audio_feature      │
+│  gpio · spi · i2c · uart · pwm · adc               │
+│  filter · pinmap · err                              │
 ├─────────────────────────────────────────────────────┤
 │  _maix_hal (MicroPython C 绑定)                      │
 │  modmaix_hal.c — 37 个函数绑定 + pwm/adc 子模块      │
@@ -23,6 +24,7 @@
 │  C HAL 抽象层 (ops 注册模式)                          │
 │  hal_gpio · hal_spi · hal_i2c · hal_uart            │
 │  hal_pwm · hal_adc · hal_camera · hal_display       │
+│  hal_audio                                          │
 ├──────────────────────┬──────────────────────────────┤
 │  STM32 驱动           │  K210 驱动                    │
 │  GPIO/SPI/I2C/UART   │  FPIOA+GPIOHS/SPI/I2C/UART  │
@@ -43,8 +45,8 @@
 | K210 (k210) | 实验 | RISC-V 参考板，SDK 探测 + 实验性构建 |
 
 已完成：
-- 198 个 pytest 测试全部通过
-- STM32 全外设 HAL ops 注册（GPIO/SPI/I2C/UART/PWM/ADC/Camera/Display）
+- 241 个 pytest 测试全部通过
+- STM32 全外设 HAL ops 注册（GPIO/SPI/I2C/UART/PWM/ADC/Camera/Display/Audio）
 - MicroPython `_maix_hal` 内建模块（37 个函数绑定）
 - K210 驱动真实实现（FPIOA+GPIOHS/SPI/I2C/UART SDK）
 - 统一 CLI 入口：构建、烧录、监视、仿真
@@ -150,6 +152,31 @@ p.duty(75.0)
 p.close()
 ```
 
+```python
+from maix.audio import Audio
+from maix.audio_feature import compute_mfcc
+from maix.nn import SpeechKWS, VAD
+import numpy as np
+
+# 音频采集
+a = Audio(sample_rate=16000, channels=1)
+data = a.read(16000)  # 读取 1 秒音频
+a.close()
+
+# 特征提取
+mfcc = compute_mfcc(data, sample_rate=16000, n_mfcc=13)
+
+# 语音关键词识别
+kws = SpeechKWS(keywords=["yes", "no", "stop", "go"])
+results = kws.recognize(data)
+print(results)  # [("yes", 0.92), ("no", 0.05), ...]
+
+# 语音活动检测
+vad = VAD(threshold=0.5, frame_duration_ms=30)
+segments = vad.process(data)
+print(segments)  # [{"start_ms": 0, "end_ms": 300, "confidence": 0.9}, ...]
+```
+
 ## 目录结构
 
 ```
@@ -170,7 +197,7 @@ MaixPy-K210-STM32/
 ├── cmake/                         CMake 工具链和模块
 ├── tools/                         烧录、监控等工具脚本
 ├── boards/                        板卡 JSON 配置
-├── tests/                         pytest 测试（198 个）
+├── tests/                         pytest 测试（241 个）
 ├── reference/
 │   ├── docs/                      文档（架构、API、移植指南）
 │   └── examples/                  示例代码
