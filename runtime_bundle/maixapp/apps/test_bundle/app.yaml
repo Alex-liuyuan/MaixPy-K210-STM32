@@ -1,0 +1,6 @@
+id: test_bundle
+name: test_bundle
+version: 0.1.0
+author: local
+files:
+  - main.py

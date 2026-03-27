@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSU Studio</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- CodeMirror 6 via CDN -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/codemirror@6.65.7/dist/index.js"></script>
+    <!-- xterm.js via CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+</head>
+<body>
+    <!-- 顶部栏 -->
+    <header id="toolbar">
+        <div class="toolbar-left">
+            <span class="logo">SYSU Studio</span>
+        </div>
+        <div class="toolbar-right">
+            <label>板卡:
+                <select id="sel-board"><option value="">加载中...</option></select>
+            </label>
+            <label>串口:
+                <select id="sel-port"><option value="">无</option></select>
+            </label>
+            <button id="btn-refresh-ports" title="刷新串口">&#x21bb;</button>
+        </div>
+    </header>
+
+    <!-- 主体 -->
+    <main id="main">
+        <!-- 左侧：编辑器 -->
+        <section id="editor-pane">
+            <div id="editor-tabs">
+                <span class="tab active" data-path="main.py">main.py</span>
+            </div>
+            <div id="editor-container"></div>
+        </section>
+
+        <!-- 右侧 -->
+        <section id="side-pane">
+            <!-- 文件树 -->
+            <div id="file-tree-pane">
+                <div class="pane-header">
+                    <span>文件</span>
+                    <button id="btn-new-file" title="新建文件">+</button>
+                </div>
+                <div id="file-tree"></div>
+            </div>
+
+            <!-- 终端 + 控制栏 -->
+            <div id="terminal-pane">
+                <div class="pane-header">
+                    <span>终端</span>
+                    <div class="action-bar">
+                        <button id="btn-build" title="构建">构建 &#9654;</button>
+                        <button id="btn-flash" title="烧录">烧录 &#9889;</button>
+                        <button id="btn-run-sim" title="模拟运行">模拟 &#9654;</button>
+                        <button id="btn-serial-toggle" title="串口连接">串口</button>
+                        <button id="btn-cancel" title="取消任务" disabled>取消</button>
+                    </div>
+                </div>
+                <div id="terminal-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 状态栏 -->
+    <footer id="statusbar">
+        <span id="status-platform">平台: -</span>
+        <span id="status-port">串口: 未连接</span>
+        <span id="status-task">就绪</span>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

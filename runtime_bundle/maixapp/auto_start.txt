@@ -1,1 +1,1 @@
-sysu_aiotos_demo
+test_bundle

@@ -8,6 +8,10 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
+│  SYSU Studio (Web IDE)                               │
+│  浏览器 → localhost:8210                              │
+│  代码编辑 · 构建烧录 · 串口监控 · 模拟运行            │
+├─────────────────────────────────────────────────────┤
 │  Python 应用层                                       │
 │  from sysu import GPIO, time, nn                    │
 │  from sysu.camera import Camera                     │
@@ -87,6 +91,21 @@ python3 project.py monitor -p sim
 python3 project.py build -p k210
 python3 project.py flash -p k210 -d /dev/ttyUSB0
 ```
+
+### SYSU Studio (Web IDE)
+
+```bash
+# 启动 Web IDE（默认 http://localhost:8210）
+python3 project.py studio
+
+# 自定义端口
+python3 project.py studio --studio-port 9000
+
+# 或直接通过模块启动
+python3 -m sysu.studio --port 8210
+```
+
+浏览器打开后即可：编写 Python 代码、选择板卡/串口、一键构建烧录、模拟运行、串口监控。
 
 ### 工具链
 
@@ -182,6 +201,7 @@ print(segments)  # [{"start_ms": 0, "end_ms": 300, "confidence": 0.9}, ...]
 ```
 MaixPy-K210-STM32/
 ├── sysu/                          Python 包（核心 API）
+│   └── studio/                    Web IDE（FastAPI 后端 + 静态前端）
 ├── components/
 │   ├── hal/                       C HAL 抽象层
 │   ├── drivers/

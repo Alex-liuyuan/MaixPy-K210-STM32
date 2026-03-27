@@ -116,7 +116,7 @@ def cmd_bundle_info() -> int:
 def main():
     parser = argparse.ArgumentParser(description="SYSU_AIOTOS 项目构建工具")
     parser.add_argument("command", nargs="?", default="help",
-                        choices=["help", "menuconfig", "build", "clean", "distclean", "flash", "monitor", "list-platforms", "k210-probe", "bundle", "bundle-info"])
+                        choices=["help", "menuconfig", "build", "clean", "distclean", "flash", "monitor", "list-platforms", "k210-probe", "bundle", "bundle-info", "studio"])
     parser.add_argument("-p", "--platform", default="rtthread", help="目标平台")
     parser.add_argument("-d", "--device", help="串口设备")
     parser.add_argument("-b", "--baudrate", type=int, default=115200, help="串口波特率")
@@ -128,6 +128,8 @@ def main():
     parser.add_argument("--reset-app", action="store_true", help="bundle 命令时重置目标应用目录")
     parser.add_argument("--config-file", help="兼容旧 CLI，当前保留不使用")
     parser.add_argument("--release", action="store_true", help="兼容旧 CLI，当前保留不使用")
+    parser.add_argument("--host", default="0.0.0.0", help="Studio 监听地址")
+    parser.add_argument("--studio-port", type=int, default=8210, help="Studio 监听端口")
     args = parser.parse_args()
 
     if args.command == "help":
@@ -142,6 +144,8 @@ def main():
         print("  python project.py k210-probe")
         print("  python project.py bundle --app-dir reference/examples/basic --model /tmp/model.tflite --labels /tmp/labels.txt")
         print("  python project.py bundle-info")
+        print("  python project.py studio")
+        print("  python project.py studio --studio-port 9000")
         print("\n说明:")
         print("  当前项目面向 ARM Cortex-M 与 RISC-V，统一使用 RT-Thread Nano。")
         print("  STM32F407 与 K210 只是首批参考板，其中 K210 仍属于实验性真构建链。")
@@ -171,6 +175,11 @@ def main():
 
     if args.command == "bundle-info":
         return cmd_bundle_info()
+
+    if args.command == "studio":
+        from sysu.studio.server import run_server
+        run_server(host=args.host, port=args.studio_port)
+        return 0
 
     if args.command in {"clean", "distclean"}:
         return clean_build_dir(args.platform)

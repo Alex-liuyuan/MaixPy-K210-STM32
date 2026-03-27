@@ -333,3 +333,54 @@ is_sp = vad.is_speech(audio_frame)   # → bool
 segments = vad.process(audio_data)
 # → [{"start_ms": 0, "end_ms": 300, "confidence": 0.9}, ...]
 ```
+
+## SYSU Studio — Web IDE
+
+启动方式：
+
+```bash
+python3 project.py studio                    # 默认 http://localhost:8210
+python3 project.py studio --studio-port 9000 # 自定义端口
+python3 -m sysu.studio --port 8210           # 模块直接启动
+```
+
+### REST API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/boards` | 板卡列表 `[{name, platform, arch, status, summary}]` |
+| GET | `/api/serial/ports` | 可用串口列表 `["/dev/ttyUSB0", ...]` |
+| POST | `/api/build` | 触发编译 body: `{platform}` → `{task_id, exit_code}` |
+| POST | `/api/flash` | 触发烧录 body: `{platform, port?}` → `{task_id, exit_code}` |
+| POST | `/api/run-sim` | 主机模拟运行 body: `{code}` → `{task_id, exit_code}` |
+| POST | `/api/cancel` | 取消当前任务 → `{cancelled: bool}` |
+| POST | `/api/bundle` | 打包用户代码 body: `{code, app_id?}` → `{ok}` |
+| GET | `/api/project/files` | 工作区文件列表 `[{path, name, is_dir}]` |
+| GET | `/api/project/file?path=` | 读取文件 → `{content}` |
+| PUT | `/api/project/file` | 更新文件 body: `{path, content}` → `{ok}` |
+| POST | `/api/project/file` | 新建文件 body: `{path, content}` → `{ok}` |
+| DELETE | `/api/project/file?path=` | 删除文件 → `{ok}` |
+
+### WebSocket
+
+**`ws://host:port/ws/serial`** — 串口桥接
+
+```json
+// 客户端 → 服务端
+{"action": "open", "port": "/dev/ttyUSB0", "baud": 115200}
+{"action": "send", "data": "<base64>"}
+{"action": "close"}
+
+// 服务端 → 客户端
+{"type": "data", "data": "<base64>"}
+{"type": "status", "connected": true}
+```
+
+**`ws://host:port/ws/build-log`** — 构建日志流
+
+```json
+// 服务端 → 客户端
+{"type": "log", "stream": "stdout", "line": "..."}
+{"type": "log", "stream": "stderr", "line": "..."}
+{"type": "done", "exit_code": 0}
+```
