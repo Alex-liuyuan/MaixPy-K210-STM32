@@ -4,7 +4,7 @@
 
 import numpy as np
 import pytest
-from maix.audio_feature import (
+from sysu.audio_feature import (
     compute_mfcc,
     compute_mel_spectrogram,
     compute_spectrogram,

@@ -1,6 +1,6 @@
 """
 tests/conftest.py
-根据平台自动选择真实或模拟HAL，并将 maix 包加入 sys.path
+根据平台自动选择真实或模拟HAL，并将 sysu 包加入 sys.path
 """
 
 import sys

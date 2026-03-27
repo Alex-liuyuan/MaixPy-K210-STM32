@@ -13,7 +13,7 @@ import os
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from maix.filter import (
+from sysu.filter import (
     MovingAverage,
     MedianFilter,
     LowPassFilter,

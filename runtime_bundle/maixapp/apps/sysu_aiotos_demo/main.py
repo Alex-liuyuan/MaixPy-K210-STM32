@@ -1,4 +1,4 @@
-from maix import app, model
+from sysu import app, model
 
 print("[app main] hello from bundled SYSU_AIOTOS app")
 print("[app main] app id =", app.app_id())
@@ -12,7 +12,7 @@ with open("/models/README.txt", "r") as f:
     print("[app main] model slot =", f.readline().strip())
 
 try:
-    from maix import nn
+    from sysu import nn
 
     runner = nn.NN()
     print("[app main] nn info =", runner.info())

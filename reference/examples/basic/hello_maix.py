@@ -1,11 +1,11 @@
 """
 SYSU_AIOTOS 主机侧 API 示例。
 
-这个示例用于验证 `maix` 主机 mock API 的基本调用流程，
+这个示例用于验证 `sysu` 主机 mock API 的基本调用流程，
 不代表当前固件已经具备板上摄像头/显示运行能力。
 """
 
-from maix import camera, display, app, time, platform
+from sysu import camera, display, app, time, platform
 
 def main():
     print("=== SYSU_AIOTOS 主机侧 hello 示例 ===")

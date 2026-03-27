@@ -1,5 +1,5 @@
 """
-maix/filter.py
+sysu/filter.py
 常用数字滤波算法，适用于嵌入式传感器数据处理
 """
 

@@ -7,7 +7,7 @@ import os
 import time as _time
 from pathlib import Path
 
-# 版本信息 —— 与 maix/version.py 保持一致
+# 版本信息 —— 与 sysu/version.py 保持一致
 from .version import __version__
 
 def _normalize_platform_name(name):
@@ -372,6 +372,6 @@ def delay_us(us):
     time.sleep_us(us)
 
 import logging as _logging
-_log = _logging.getLogger("maix")
+_log = _logging.getLogger("sysu")
 _log.debug(f"[SYSU_AIOTOS] 初始化完成，当前平台: {_current_platform}")
 _log.debug(f"[SYSU_AIOTOS] 版本: {__version__}")

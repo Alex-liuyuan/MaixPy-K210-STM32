@@ -5,9 +5,9 @@ from pathlib import Path
 
 here = Path(__file__).parent
 
-# 从 maix/version.py 读取版本号（避免 import maix 触发副作用）
+# 从 sysu/version.py 读取版本号（避免 import sysu 触发副作用）
 version = {}
-exec((here / "maix" / "version.py").read_text(), version)
+exec((here / "sysu" / "version.py").read_text(), version)
 
 setup(
     name="maixpy-nano-rtthread",
@@ -33,7 +33,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "maixpy-project=maix.tools:main",
+            "maixpy-project=sysu.tools:main",
         ],
     },
     classifiers=[

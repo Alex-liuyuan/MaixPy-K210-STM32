@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 @pytest.fixture
 def rgb_image():
     """创建一个320x240的黑色RGB888图像"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((240, 320, 3), dtype=np.uint8)
     return Image(data, 320, 240, "RGB888")
 
@@ -58,7 +58,7 @@ def test_draw_string_changes_pixels(rgb_image):
 
 
 def test_resize_shape():
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.random.randint(0, 255, (240, 320, 3), dtype=np.uint8)
     img = Image(data, 320, 240, "RGB888")
     resized = img.resize(160, 120)
@@ -69,7 +69,7 @@ def test_resize_shape():
 
 def test_resize_nearest_neighbor():
     """验证最近邻插值：2x2图像放大到4x4"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.array([[[255, 0, 0], [0, 255, 0]],
                      [[0, 0, 255], [255, 255, 0]]], dtype=np.uint8)
     img = Image(data, 2, 2, "RGB888")
@@ -81,7 +81,7 @@ def test_resize_nearest_neighbor():
 
 
 def test_crop_shape():
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.random.randint(0, 255, (240, 320, 3), dtype=np.uint8)
     img = Image(data, 320, 240, "RGB888")
     cropped = img.crop(10, 20, 100, 80)
@@ -92,7 +92,7 @@ def test_crop_shape():
 
 def test_crop_pixel_values():
     """验证裁剪后像素值正确"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     data[10:20, 10:20] = [255, 128, 64]
     img = Image(data, 100, 100, "RGB888")
@@ -102,7 +102,7 @@ def test_crop_pixel_values():
 
 
 def test_copy_independence():
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((50, 50, 3), dtype=np.uint8)
     img = Image(data, 50, 50, "RGB888")
     copy = img.copy()
@@ -111,7 +111,7 @@ def test_copy_independence():
 
 
 def test_to_bytes():
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.ones((10, 10, 3), dtype=np.uint8) * 42
     img = Image(data, 10, 10, "RGB888")
     b = img.to_bytes()
@@ -122,7 +122,7 @@ def test_to_bytes():
 
 def test_camera_read_returns_image():
     """测试Camera.read()返回Image对象"""
-    from maix.camera import Camera
+    from sysu.camera import Camera
     cam = Camera(160, 120, "RGB888")
     img = cam.read()
     assert img is not None
@@ -135,7 +135,7 @@ def test_camera_read_returns_image():
 
 def test_find_blobs_single():
     """测试单色块检测"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     # 在(20,20)-(40,40)区域填充红色
     data[20:40, 20:40] = [255, 0, 0]
@@ -152,7 +152,7 @@ def test_find_blobs_single():
 
 def test_find_blobs_area_threshold():
     """测试面积阈值过滤"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     # 只有3个像素的小色块
     data[10, 10] = [255, 0, 0]
@@ -165,7 +165,7 @@ def test_find_blobs_area_threshold():
 
 def test_find_blobs_no_match():
     """测试无匹配色块"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     img = Image(data, 100, 100, "RGB888")
     blobs = img.find_blobs([(200, 255, 0, 50, 0, 50)])
@@ -174,7 +174,7 @@ def test_find_blobs_no_match():
 
 def test_find_blobs_centroid():
     """测试色块质心坐标"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     data[30:50, 40:60] = [255, 0, 0]
     img = Image(data, 100, 100, "RGB888")
@@ -188,7 +188,7 @@ def test_find_blobs_centroid():
 
 def test_find_blobs_multiple_thresholds():
     """测试多阈值色块检测"""
-    from maix.camera import Image
+    from sysu.camera import Image
     data = np.zeros((100, 100, 3), dtype=np.uint8)
     data[10:30, 10:30] = [255, 0, 0]   # 红色块
     data[50:70, 50:70] = [0, 255, 0]   # 绿色块
@@ -242,7 +242,7 @@ def test_draw_circle_no_crash(rgb_image):
 
 def test_blob_result_repr():
     """测试BlobResult的repr"""
-    from maix.camera import BlobResult
+    from sysu.camera import BlobResult
     b = BlobResult(10, 20, 30, 40, 500, 25, 40)
     r = repr(b)
     assert "BlobResult" in r

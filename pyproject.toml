@@ -21,7 +21,7 @@ dev = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "maix.version.__version__"}
+version = {attr = "sysu.version.__version__"}
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests.*", "examples", "examples.*"]

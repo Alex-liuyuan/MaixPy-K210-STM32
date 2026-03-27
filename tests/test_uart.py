@@ -37,8 +37,8 @@ def test_uart_inject_and_read(hal):
 
 
 def test_uart_class():
-    """测试 maix.uart.UART 高层接口"""
-    from maix.uart import UART
+    """测试 sysu.uart.UART 高层接口"""
+    from sysu.uart import UART
     u = UART(uart_id=1, baudrate=9600)
     assert u.write(b"test") == 0
     data = u.read(10, timeout=10)
@@ -47,6 +47,6 @@ def test_uart_class():
 
 
 def test_uart_class_context_manager():
-    from maix.uart import UART
+    from sysu.uart import UART
     with UART(uart_id=2, baudrate=115200) as u:
         u.write("AT\r\n")

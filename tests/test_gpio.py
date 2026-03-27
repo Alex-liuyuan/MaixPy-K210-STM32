@@ -46,8 +46,8 @@ def test_gpio_irq(hal):
 
 
 def test_gpio_class():
-    """测试 maix.GPIO 高层接口"""
-    from maix import GPIO
+    """测试 sysu.GPIO 高层接口"""
+    from sysu import GPIO
     led = GPIO(0x00000005, GPIO.MODE_OUTPUT)  # PA5
     led.on()
     assert led.value() == 1

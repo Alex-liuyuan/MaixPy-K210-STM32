@@ -1,12 +1,12 @@
 """
-maix.pinmap 模块测试
+sysu.pinmap 模块测试
 """
 import pytest
 import os
 os.environ["MAIX_PLATFORM"] = "linux"
 
-from maix import pinmap
-from maix.err import ERR_NONE, ERR_INVAL, ERR_NODEV
+from sysu import pinmap
+from sysu.err import ERR_NONE, ERR_INVAL, ERR_NODEV
 
 
 def setup_function():

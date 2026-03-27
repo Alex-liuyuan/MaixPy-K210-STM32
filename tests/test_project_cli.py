@@ -1,5 +1,5 @@
 """
-project.py / maix.tools CLI 烟雾测试
+project.py / sysu.tools CLI 烟雾测试
 """
 
 from __future__ import annotations
@@ -100,7 +100,7 @@ def test_project_bundle_info_lists_runtime_bundle():
     assert "/boot.py" in res.stdout
 
 
-def test_maix_tool_modules_importable():
-    res = run_cmd("-c", "import maix.tools.flash, maix.tools.monitor; print('ok')")
+def test_sysu_tool_modules_importable():
+    res = run_cmd("-c", "import sysu.tools.flash, sysu.tools.monitor; print('ok')")
     assert res.returncode == 0
     assert "ok" in res.stdout

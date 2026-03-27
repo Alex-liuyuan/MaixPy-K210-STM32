@@ -1,9 +1,9 @@
 # API 参考手册
 
-## maix 核心模块
+## sysu 核心模块
 
 ```python
-from maix import time, app, model, sys, GPIO, platform, version, delay
+from sysu import time, app, model, sys, GPIO, platform, version, delay
 ```
 
 ### 版本与平台
@@ -15,7 +15,7 @@ from maix import time, app, model, sys, GPIO, platform, version, delay
 | `sys.device_id()` | 设备唯一ID |
 | `sys.platform()` | 同 `platform()` |
 
-### 时间 (maix.time)
+### 时间 (sysu.time)
 
 | 方法 | 说明 |
 |------|------|
@@ -30,7 +30,7 @@ from maix import time, app, model, sys, GPIO, platform, version, delay
 | `time.timezone()` | 时区偏移（秒） |
 | `time.fps()` | 计算FPS |
 
-### 应用控制 (maix.app)
+### 应用控制 (sysu.app)
 
 | 方法 | 说明 |
 |------|------|
@@ -41,7 +41,7 @@ from maix import time, app, model, sys, GPIO, platform, version, delay
 ### GPIO
 
 ```python
-from maix import GPIO
+from sysu import GPIO
 
 led = GPIO(pin, GPIO.Mode.OUT)  # 新枚举
 led = GPIO(pin, GPIO.MODE_OUTPUT)  # 旧常量兼容
@@ -53,19 +53,19 @@ val = led.value()      # 读取
 led.value(1)           # 写入
 ```
 
-## maix.err — 错误处理
+## sysu.err — 错误处理
 
 ```python
-from maix.err import check_raise, check_bool, HardwareError, ERR_NONE
+from sysu.err import check_raise, check_bool, HardwareError, ERR_NONE
 
 ret = check_raise(hal_func(), "操作失败")  # 非零抛 HardwareError
 ok = check_bool(hal_func())                # 返回 True/False
 ```
 
-## maix.pinmap — 引脚复用
+## sysu.pinmap — 引脚复用
 
 ```python
-from maix import pinmap
+from sysu import pinmap
 
 pinmap.set_pin_function("PA9", "USART1_TX")
 func = pinmap.get_pin_function("PA9")
@@ -73,12 +73,12 @@ caps = pinmap.get_pin_capabilities("PA9")  # ['GPIO', 'USART1_TX', ...]
 info = pinmap.get_pins_info()
 ```
 
-## maix.camera — 摄像头与图像
+## sysu.camera — 摄像头与图像
 
 ### Camera
 
 ```python
-from maix.camera import Camera
+from sysu.camera import Camera
 
 cam = Camera(320, 240, "RGB888")
 img = cam.read()
@@ -104,10 +104,10 @@ for b in blobs:
     print(b.x, b.y, b.w, b.h, b.pixels, b.cx, b.cy)
 ```
 
-## maix.display — 显示
+## sysu.display — 显示
 
 ```python
-from maix.display import Display, create_display
+from sysu.display import Display, create_display
 
 d = Display(320, 240)
 d.show(img)
@@ -118,10 +118,10 @@ d.set_rotation(90)
 d.close()
 ```
 
-## maix.nn — 神经网络
+## sysu.nn — 神经网络
 
 ```python
-from maix import nn
+from sysu import nn
 
 # 通用推理
 model = nn.NN("model.tflite")
@@ -141,10 +141,10 @@ det = nn.YOLOv8("yolo.tflite", labels)
 results = det.detect(img)
 ```
 
-## maix.uart — 串口
+## sysu.uart — 串口
 
 ```python
-from maix.uart import UART
+from sysu.uart import UART
 
 u = UART(uart_id=1, baudrate=115200)
 u.write(b"hello")
@@ -153,10 +153,10 @@ u.set_received_callback(lambda s, data: print(data))
 u.close()
 ```
 
-## maix.spi — SPI
+## sysu.spi — SPI
 
 ```python
-from maix.spi import SPI
+from sysu.spi import SPI
 
 s = SPI(spi_id=1, baudrate=1_000_000)
 s.write(b"\x01\x02")
@@ -165,10 +165,10 @@ rx = s.transfer(b"\xAA\xBB")
 s.close()
 ```
 
-## maix.i2c — I2C
+## sysu.i2c — I2C
 
 ```python
-from maix.i2c import I2C
+from sysu.i2c import I2C
 
 bus = I2C(i2c_id=1, clock_speed=400_000)
 bus.write(0x50, b"\x00\x10")
@@ -178,10 +178,10 @@ data = bus.mem_read(0x50, 0x00, 2)
 bus.close()
 ```
 
-## maix.adc — ADC
+## sysu.adc — ADC
 
 ```python
-from maix.adc import ADC, CH0, CH1, RES_BIT_12
+from sysu.adc import ADC, CH0, CH1, RES_BIT_12
 
 a = ADC(adc_id=1, resolution=RES_BIT_12, vref=3.3)
 raw = a.read(CH0)           # 原始值 0-4095
@@ -193,10 +193,10 @@ a.close()
 
 通道常量：`CH0`-`CH15`, `CH_TEMP`, `CH_VREFINT`, `CH_VBAT`
 
-## maix.pwm — PWM
+## sysu.pwm — PWM
 
 ```python
-from maix.pwm import PWM
+from sysu.pwm import PWM
 
 # 通过 pwm_id（自动映射 timer/channel）
 p = PWM(pwm_id=1, freq=1000, duty=50.0, enable=True)
@@ -210,10 +210,10 @@ p.stop()
 p.close()
 ```
 
-## maix.filter — 数字滤波器
+## sysu.filter — 数字滤波器
 
 ```python
-from maix.filter import (MovingAverage, MedianFilter, LowPassFilter,
+from sysu.filter import (MovingAverage, MedianFilter, LowPassFilter,
                           KalmanFilter1D, DeadZoneFilter, LimitFilter)
 
 ma = MovingAverage(window=5)
@@ -230,12 +230,12 @@ ma.reset()
 | `DeadZoneFilter(threshold)` | 死区阈值 | 抖动抑制 |
 | `LimitFilter(max_delta)` | 最大变化量 | 突变过滤 |
 
-## maix.audio — 音频采集与播放
+## sysu.audio — 音频采集与播放
 
 ### Audio
 
 ```python
-from maix.audio import Audio, AudioFrame
+from sysu.audio import Audio, AudioFrame
 
 a = Audio(sample_rate=16000, channels=1, format="PCM_S16", frame_size=512)
 data = a.read()           # 返回 int16 numpy 数组，长度 = frame_size
@@ -264,12 +264,12 @@ b = frame.to_bytes()         # 转为 bytes
 f = frame.to_float()         # 归一化到 [-1.0, 1.0]
 ```
 
-## maix.audio_feature — 音频特征提取
+## sysu.audio_feature — 音频特征提取
 
 纯 numpy 实现，零外部依赖。
 
 ```python
-from maix.audio_feature import (
+from sysu.audio_feature import (
     compute_mfcc, compute_mel_spectrogram, compute_spectrogram,
     compute_energy, pre_emphasis,
 )
@@ -299,12 +299,12 @@ energy = compute_energy(signal, frame_size=512, hop_length=160)
 emphasized = pre_emphasis(signal, coeff=0.97)
 ```
 
-## maix.nn — 音频 AI 推理类
+## sysu.nn — 音频 AI 推理类
 
 ### SpeechKWS（语音关键词识别）
 
 ```python
-from maix.nn import SpeechKWS
+from sysu.nn import SpeechKWS
 
 kws = SpeechKWS(keywords=["yes", "no", "stop", "go"], threshold=0.8,
                 sample_rate=16000, frame_duration_ms=1000)
@@ -315,7 +315,7 @@ results = kws.recognize(audio_data)
 ### AudioClassifier（音频事件分类）
 
 ```python
-from maix.nn import AudioClassifier
+from sysu.nn import AudioClassifier
 
 clf = AudioClassifier(labels=["speech", "music", "noise"], threshold=0.5,
                       sample_rate=16000, clip_duration_ms=1000)
@@ -326,7 +326,7 @@ results = clf.classify(audio_data)
 ### VAD（语音活动检测）
 
 ```python
-from maix.nn import VAD
+from sysu.nn import VAD
 
 vad = VAD(threshold=0.5, sample_rate=16000, frame_duration_ms=30)
 is_sp = vad.is_speech(audio_frame)   # → bool

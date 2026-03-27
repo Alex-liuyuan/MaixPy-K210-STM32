@@ -34,8 +34,8 @@ def test_i2c_mem_write_read(hal):
 
 
 def test_i2c_class():
-    """测试 maix.i2c.I2C 高层接口"""
-    from maix.i2c import I2C
+    """测试 sysu.i2c.I2C 高层接口"""
+    from sysu.i2c import I2C
     bus = I2C(i2c_id=1, clock_speed=400_000)
     assert bus.write(0x68, b"\x6B\x00") == 0
     data = bus.read(0x68, 6)
@@ -44,7 +44,7 @@ def test_i2c_class():
 
 
 def test_i2c_mem_class():
-    from maix.i2c import I2C
+    from sysu.i2c import I2C
     with I2C(i2c_id=1) as bus:
         bus.write_reg(0x50, 0x00, b"\x12\x34")
         data = bus.read_reg(0x50, 0x00, 2)

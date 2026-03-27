@@ -44,11 +44,11 @@ def test_display_hal_size(hal):
     assert hal.display_height() == 320
 
 
-# ---- 高层 maix.display.Display 接口测试 ----
+# ---- 高层 sysu.display.Display 接口测试 ----
 
 def test_display_class_init():
     """测试Display类初始化"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     assert d.width == 320
     assert d.height == 240
@@ -58,8 +58,8 @@ def test_display_class_init():
 
 def test_display_class_default_size():
     """测试默认分辨率随平台变化"""
-    from maix.display import Display
-    from maix import _current_platform
+    from sysu.display import Display
+    from sysu import _current_platform
     d = Display()
     if _current_platform == 'stm32':
         assert d.width == 320
@@ -72,8 +72,8 @@ def test_display_class_default_size():
 
 def test_display_class_show():
     """测试show()方法"""
-    from maix.display import Display
-    from maix.camera import Image
+    from sysu.display import Display
+    from sysu.camera import Image
     d = Display(320, 240)
     img = Image(np.zeros((240, 320, 3), dtype=np.uint8), 320, 240, "RGB888")
     d.show(img)  # 不应抛异常
@@ -82,7 +82,7 @@ def test_display_class_show():
 
 def test_display_class_show_not_initialized():
     """测试未初始化时show()抛异常"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     d._initialized = False
     with pytest.raises(RuntimeError):
@@ -91,7 +91,7 @@ def test_display_class_show_not_initialized():
 
 def test_display_class_clear():
     """测试clear()方法"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     d.clear()  # 默认黑色
     d.clear(color=(255, 0, 0))  # 红色
@@ -100,7 +100,7 @@ def test_display_class_clear():
 
 def test_display_class_size():
     """测试size()方法"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     assert d.size() == (320, 240)
     d.close()
@@ -108,7 +108,7 @@ def test_display_class_size():
 
 def test_display_class_set_backlight():
     """测试set_backlight()方法"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     d.set_backlight(50)
     d.set_backlight(0)
@@ -118,7 +118,7 @@ def test_display_class_set_backlight():
 
 def test_display_class_set_backlight_clamp():
     """测试背光值钳位"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     d.set_backlight(-10)   # 应钳位到0
     d.set_backlight(200)   # 应钳位到100
@@ -127,7 +127,7 @@ def test_display_class_set_backlight_clamp():
 
 def test_display_class_set_rotation():
     """测试set_rotation()方法"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     for angle in [0, 90, 180, 270]:
         d.set_rotation(angle)
@@ -136,7 +136,7 @@ def test_display_class_set_rotation():
 
 def test_display_class_set_rotation_invalid():
     """测试无效旋转角度"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     with pytest.raises(ValueError):
         d.set_rotation(45)
@@ -145,7 +145,7 @@ def test_display_class_set_rotation_invalid():
 
 def test_display_class_close():
     """测试close()方法"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     assert d._initialized is True
     d.close()
@@ -154,7 +154,7 @@ def test_display_class_close():
 
 def test_display_class_double_close():
     """测试重复close()不抛异常"""
-    from maix.display import Display
+    from sysu.display import Display
     d = Display(320, 240)
     d.close()
     d.close()  # 第二次不应抛异常
@@ -162,7 +162,7 @@ def test_display_class_double_close():
 
 def test_create_display_convenience():
     """测试便利函数"""
-    from maix.display import create_display
+    from sysu.display import create_display
     d = create_display(160, 120)
     assert d.width == 160
     assert d.height == 120

@@ -37,8 +37,8 @@ def test_spi_transfer(hal):
 
 
 def test_spi_class():
-    """测试 maix.spi.SPI 高层接口"""
-    from maix.spi import SPI
+    """测试 sysu.spi.SPI 高层接口"""
+    from sysu.spi import SPI
     s = SPI(spi_id=1, baudrate=500_000)
     assert s.write(b"\xFF") == 0
     rx = s.read(2)
@@ -49,6 +49,6 @@ def test_spi_class():
 
 
 def test_spi_class_context_manager():
-    from maix.spi import SPI
+    from sysu.spi import SPI
     with SPI(spi_id=2) as s:
         s.write(bytes([0x9F]))

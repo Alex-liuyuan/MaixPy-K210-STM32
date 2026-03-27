@@ -45,11 +45,11 @@ def test_adc_deinit_hal(hal):
     assert hal.adc.deinit(0) == 0
 
 
-# ---- 高层 maix.adc.ADC 接口测试 ----
+# ---- 高层 sysu.adc.ADC 接口测试 ----
 
 def test_adc_class_init():
     """测试ADC类初始化"""
-    from maix.adc import ADC, RES_BIT_12
+    from sysu.adc import ADC, RES_BIT_12
     a = ADC(adc_id=1, resolution=RES_BIT_12, vref=3.3)
     assert a.adc_id == 0  # 1-based -> 0-based
     assert a.resolution == 12
@@ -59,7 +59,7 @@ def test_adc_class_init():
 
 def test_adc_class_resolution():
     """测试不同分辨率"""
-    from maix.adc import ADC, RES_BIT_8, RES_BIT_10, RES_BIT_12
+    from sysu.adc import ADC, RES_BIT_8, RES_BIT_10, RES_BIT_12
     a8 = ADC(adc_id=1, resolution=RES_BIT_8)
     assert a8._max_val == 255
     a10 = ADC(adc_id=1, resolution=RES_BIT_10)
@@ -70,7 +70,7 @@ def test_adc_class_resolution():
 
 def test_adc_class_read():
     """测试ADC read()"""
-    from maix.adc import ADC, CH0, CH1
+    from sysu.adc import ADC, CH0, CH1
     a = ADC(adc_id=1)
     val0 = a.read(CH0)
     assert isinstance(val0, int)
@@ -81,7 +81,7 @@ def test_adc_class_read():
 
 def test_adc_class_read_vol():
     """测试ADC read_vol()"""
-    from maix.adc import ADC, CH0
+    from sysu.adc import ADC, CH0
     a = ADC(adc_id=1, vref=3.3)
     vol = a.read_vol(CH0)
     assert isinstance(vol, float)
@@ -90,14 +90,14 @@ def test_adc_class_read_vol():
 
 def test_adc_class_read_voltage_alias():
     """测试 read_voltage() 是 read_vol() 的别名"""
-    from maix.adc import ADC, CH0
+    from sysu.adc import ADC, CH0
     a = ADC(adc_id=1, vref=3.3)
     assert a.read_voltage(CH0) == a.read_vol(CH0)
 
 
 def test_adc_class_read_multi():
     """测试多通道读取"""
-    from maix.adc import ADC, CH0, CH1, CH2
+    from sysu.adc import ADC, CH0, CH1, CH2
     a = ADC(adc_id=1)
     results = a.read_multi([CH0, CH1, CH2])
     assert len(results) == 3
@@ -108,14 +108,14 @@ def test_adc_class_read_multi():
 
 def test_adc_class_close():
     """测试ADC close()"""
-    from maix.adc import ADC
+    from sysu.adc import ADC
     a = ADC(adc_id=1)
     a.close()  # 不应抛异常
 
 
 def test_adc_class_context_manager():
     """测试上下文管理器"""
-    from maix.adc import ADC, CH0
+    from sysu.adc import ADC, CH0
     with ADC(adc_id=1) as a:
         val = a.read(CH0)
         assert isinstance(val, int)
@@ -123,7 +123,7 @@ def test_adc_class_context_manager():
 
 def test_adc_channel_constants():
     """测试通道常量定义"""
-    from maix import adc
+    from sysu import adc
     assert adc.CH0 == 0
     assert adc.CH15 == 15
     assert adc.CH_TEMP == 16

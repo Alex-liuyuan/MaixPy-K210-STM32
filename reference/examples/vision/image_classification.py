@@ -5,7 +5,7 @@
 它不代表 RT-Thread Nano 固件已经具备板上模型加载或板上 Python 推理能力。
 """
 
-from maix import camera, display, app, time, nn
+from sysu import camera, display, app, time, nn
 
 def main():
     print("=== 图像分类示例 ===")
@@ -19,7 +19,7 @@ def main():
         'elephant', 'bear', 'zebra', 'giraffe', 'backpack'
     ]
 
-    from maix import platform
+    from sysu import platform
     current_platform = platform()
     print(f"当前平台: {current_platform}")
 

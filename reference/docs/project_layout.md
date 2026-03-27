@@ -6,7 +6,7 @@
 
 ```
 MaixPy-K210-STM32/
-├── maix/                          # Python 包（核心 API）
+├── sysu/                          # Python 包（核心 API）
 ├── components/
 │   ├── hal/                       # C HAL 抽象层
 │   ├── drivers/
@@ -41,7 +41,7 @@ MaixPy-K210-STM32/
 
 ## 各目录职责
 
-- `maix/` — 主机侧 Python API 包，包含 camera、display、nn、GPIO、SPI、I2C、UART、PWM、ADC 等模块
+- `sysu/` — 主机侧 Python API 包，包含 camera、display、nn、GPIO、SPI、I2C、UART、PWM、ADC 等模块
 - `components/hal/` — C 语言 HAL 抽象层，通过 ops 结构体模式注册平台驱动
 - `components/drivers/` — 平台专用驱动实现（STM32 HAL、K210 SDK）
 - `runtime/` — 统一运行时入口，包含启动状态、内置脚本包、Python/AI 运行时

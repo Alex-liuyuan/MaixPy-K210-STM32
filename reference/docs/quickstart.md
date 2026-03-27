@@ -102,19 +102,19 @@ QEMU 平台入口源码位于：
 
 ## Python API 快速体验
 
-在 Linux 主机上可以直接使用 `maix` 包（模拟模式）：
+在 Linux 主机上可以直接使用 `sysu` 包（模拟模式）：
 
 ```bash
 pip install -e .
-python3 -c "from maix import *; print(version())"
+python3 -c "from sysu import *; print(version())"
 ```
 
 基础示例：
 
 ```python
-from maix import GPIO, time
-from maix.camera import Camera
-from maix.display import Display
+from sysu import GPIO, time
+from sysu.camera import Camera
+from sysu.display import Display
 
 # GPIO
 led = GPIO(0x00000005, GPIO.Mode.OUT)

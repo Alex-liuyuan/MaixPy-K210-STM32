@@ -1,11 +1,11 @@
 """
-maix.err 模块测试
+sysu.err 模块测试
 """
 import pytest
 import os
 os.environ["MAIX_PLATFORM"] = "linux"
 
-from maix.err import (
+from sysu.err import (
     MaixError, HardwareError, NotSupportedError, InvalidArgError,
     ERR_NONE, ERR_TIMEOUT, ERR_BUSY, ERR_INVAL, ERR_NOMEM, ERR_NODEV,
     check_raise, check_bool,

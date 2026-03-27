@@ -9,11 +9,11 @@
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Python 应用层                                       │
-│  from maix import GPIO, time, nn                    │
-│  from maix.camera import Camera                     │
-│  from maix.display import Display                   │
+│  from sysu import GPIO, time, nn                    │
+│  from sysu.camera import Camera                     │
+│  from sysu.display import Display                   │
 ├─────────────────────────────────────────────────────┤
-│  maix Python 包                                      │
+│  sysu Python 包                                      │
 │  camera · display · nn · audio · audio_feature      │
 │  gpio · spi · i2c · uart · pwm · adc               │
 │  filter · pinmap · err                              │
@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 # 主机侧验证（Linux 模拟模式）
 pip install -e .
-python3 -c "from maix import *; print(version())"  # 1.0.0
+python3 -c "from sysu import *; print(version())"  # 1.0.0
 
 # 运行测试
 python3 -m pytest tests/ -v
@@ -97,9 +97,9 @@ python3 project.py flash -p k210 -d /dev/ttyUSB0
 ## Python API 示例
 
 ```python
-from maix import GPIO, time
-from maix.camera import Camera
-from maix.display import Display
+from sysu import GPIO, time
+from sysu.camera import Camera
+from sysu.display import Display
 
 # GPIO
 led = GPIO(0x00000005, GPIO.Mode.OUT)
@@ -118,11 +118,11 @@ disp.close()
 ```
 
 ```python
-from maix.spi import SPI
-from maix.i2c import I2C
-from maix.uart import UART
-from maix.adc import ADC, CH0
-from maix.pwm import PWM
+from sysu.spi import SPI
+from sysu.i2c import I2C
+from sysu.uart import UART
+from sysu.adc import ADC, CH0
+from sysu.pwm import PWM
 
 # SPI
 s = SPI(spi_id=1, baudrate=1_000_000)
@@ -153,9 +153,9 @@ p.close()
 ```
 
 ```python
-from maix.audio import Audio
-from maix.audio_feature import compute_mfcc
-from maix.nn import SpeechKWS, VAD
+from sysu.audio import Audio
+from sysu.audio_feature import compute_mfcc
+from sysu.nn import SpeechKWS, VAD
 import numpy as np
 
 # 音频采集
@@ -181,7 +181,7 @@ print(segments)  # [{"start_ms": 0, "end_ms": 300, "confidence": 0.9}, ...]
 
 ```
 MaixPy-K210-STM32/
-├── maix/                          Python 包（核心 API）
+├── sysu/                          Python 包（核心 API）
 ├── components/
 │   ├── hal/                       C HAL 抽象层
 │   ├── drivers/

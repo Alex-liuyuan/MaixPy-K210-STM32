@@ -65,9 +65,9 @@ def test_runner_last_invoke_ms(runner):
 
 
 def test_classifier_classify():
-    """测试 maix.nn.Classifier 高层接口"""
-    from maix.nn import Classifier
-    from maix.camera import Image
+    """测试 sysu.nn.Classifier 高层接口"""
+    from sysu.nn import Classifier
+    from sysu.camera import Image
 
     labels = [f"class_{i}" for i in range(1000)]
     clf = Classifier("dummy.tflite", labels)
@@ -85,8 +85,8 @@ def test_classifier_classify():
 
 def test_classifier_top_result_is_highest():
     """分类结果应按置信度降序排列"""
-    from maix.nn import Classifier
-    from maix.camera import Image
+    from sysu.nn import Classifier
+    from sysu.camera import Image
 
     labels = [f"cls_{i}" for i in range(10)]
     clf = Classifier("dummy.tflite", labels)
@@ -99,9 +99,9 @@ def test_classifier_top_result_is_highest():
 
 
 def test_detector_detect():
-    """测试 maix.nn.Detector 高层接口"""
-    from maix.nn import Detector, DetectionResult
-    from maix.camera import Image
+    """测试 sysu.nn.Detector 高层接口"""
+    from sysu.nn import Detector, DetectionResult
+    from sysu.camera import Image
 
     labels = ["cat", "dog", "bird"]
     det = Detector("dummy.tflite", labels, threshold=0.0)
@@ -119,7 +119,7 @@ def test_detector_detect():
 
 
 def test_nn_unload():
-    from maix.nn import NeuralNetwork
+    from sysu.nn import NeuralNetwork
     nn = NeuralNetwork("dummy.tflite")
     assert nn.loaded
     nn.unload()
@@ -127,7 +127,7 @@ def test_nn_unload():
 
 
 def test_model_info_helper(monkeypatch):
-    from maix import model
+    from sysu import model
 
     monkeypatch.setattr(model, "path", lambda: "/tmp/demo_model.tflite")
     monkeypatch.setattr(model, "labels_path", lambda: "/tmp/demo_model.txt")
@@ -143,7 +143,7 @@ def test_model_info_helper(monkeypatch):
 
 
 def test_neural_network_uses_default_model(monkeypatch):
-    import maix.nn as nn_mod
+    import sysu.nn as nn_mod
 
     monkeypatch.setattr(nn_mod._model_info, "path", lambda: "/tmp/default_model.tflite")
     monkeypatch.setattr(nn_mod._model_info, "labels_path", lambda: "/tmp/default_model.txt")

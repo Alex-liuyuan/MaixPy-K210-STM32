@@ -1,10 +1,10 @@
 """
-maix time 增强功能测试
+sysu time 增强功能测试
 """
 import os
 os.environ["MAIX_PLATFORM"] = "linux"
 
-from maix import time
+from sysu import time
 
 
 def test_ticks_ms_increases():

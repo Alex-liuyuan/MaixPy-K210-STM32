@@ -4,7 +4,7 @@
 
 import numpy as np
 import pytest
-from maix.audio import Audio, AudioFrame
+from sysu.audio import Audio, AudioFrame
 
 
 class TestAudioOpenClose:

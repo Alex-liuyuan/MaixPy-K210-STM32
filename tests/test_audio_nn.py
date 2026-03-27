@@ -4,7 +4,7 @@
 
 import numpy as np
 import pytest
-from maix.nn import SpeechKWS, AudioClassifier, VAD
+from sysu.nn import SpeechKWS, AudioClassifier, VAD
 
 
 def _sine_wave(freq=440, sr=16000, duration=1.0):

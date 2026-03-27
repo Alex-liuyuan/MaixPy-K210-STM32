@@ -1,10 +1,10 @@
 """
 GPIO 控制示例。
 
-当前默认用于验证 `maix.GPIO` 的主机 mock 行为，以及统一 API 形状。
+当前默认用于验证 `sysu.GPIO` 的主机 mock 行为，以及统一 API 形状。
 """
 
-from maix import GPIO, time, app
+from sysu import GPIO, time, app
 
 def main():
     print("=== GPIO控制示例 ===")
