@@ -1,169 +1,203 @@
 # SYSU_AIOTOS
 
-`SYSU_AIOTOS` 是一个面向 `ARM Cortex-M` 与 `RISC-V` 的跨架构 AIoT 系统原型仓库。当前统一系统层为 `RT-Thread Nano`，并在其上逐步收敛 `MicroPython`、运行时资源包、模型运行时骨架和上层 `maix` API。
+跨架构边缘 AI 开发框架，面向 ARM Cortex-M 与 RISC-V，统一 RT-Thread Nano + MicroPython + Python API。
 
-当前最明确的一条主线是：
+当前参考板：STM32F407 Nucleo（主线）、K210 Generic（实验）、QEMU olimex-stm32-h405（仿真）。
 
-- 真板：`STM32F407 Nucleo + RT-Thread Nano`
-- 仿真：`QEMU olimex-stm32-h405`
-- 实验链路：`K210 + RT-Thread Nano`
+## 架构
 
-这个仓库已经能提供统一构建入口、板级/仿真运行入口、运行时资源打包、主机侧 API 验证与回归测试，但它还不是一个已经完成板上 AI 闭环的成品系统。
+```
+┌─────────────────────────────────────────────────────┐
+│  Python 应用层                                       │
+│  from maix import GPIO, time, nn                    │
+│  from maix.camera import Camera                     │
+│  from maix.display import Display                   │
+├─────────────────────────────────────────────────────┤
+│  maix Python 包                                      │
+│  camera · display · nn · gpio · spi · i2c · uart    │
+│  pwm · adc · filter · pinmap · err                  │
+├─────────────────────────────────────────────────────┤
+│  _maix_hal (MicroPython C 绑定)                      │
+│  modmaix_hal.c — 37 个函数绑定 + pwm/adc 子模块      │
+├─────────────────────────────────────────────────────┤
+│  C HAL 抽象层 (ops 注册模式)                          │
+│  hal_gpio · hal_spi · hal_i2c · hal_uart            │
+│  hal_pwm · hal_adc · hal_camera · hal_display       │
+├──────────────────────┬──────────────────────────────┤
+│  STM32 驱动           │  K210 驱动                    │
+│  GPIO/SPI/I2C/UART   │  FPIOA+GPIOHS/SPI/I2C/UART  │
+│  PWM/ADC/DCMI/LCD    │                              │
+├──────────────────────┴──────────────────────────────┤
+│  RT-Thread Nano                                      │
+├──────────────────────┬──────────────────────────────┤
+│  ARM Cortex-M        │  RISC-V                       │
+└──────────────────────┴──────────────────────────────┘
+```
 
 ## 当前状态
 
-| 目标 | 状态 | 说明 |
+| 平台 | 状态 | 说明 |
 |------|------|------|
-| `rtthread` | 可用 | 当前 ARM Cortex-M 参考板固件目标 |
-| `sim` | 可用 | 当前 QEMU 仿真验证目标 |
-| `k210` | 实验 | 当前 RISC-V 参考板实验目标 |
+| STM32F407 (rtthread) | 可用 | ARM 主线参考板，Python→C HAL 全链路打通 |
+| QEMU (sim) | 可用 | 仿真验证，semihosting 模式 |
+| K210 (k210) | 实验 | RISC-V 参考板，SDK 探测 + 实验性构建 |
 
-当前已经具备：
+已完成：
+- 198 个 pytest 测试全部通过
+- STM32 全外设 HAL ops 注册（GPIO/SPI/I2C/UART/PWM/ADC/Camera/Display）
+- MicroPython `_maix_hal` 内建模块（37 个函数绑定）
+- K210 驱动真实实现（FPIOA+GPIOHS/SPI/I2C/UART SDK）
+- 统一 CLI 入口：构建、烧录、监视、仿真
 
-- 统一 CLI 入口：`project.py`
-- STM32 真板构建、烧录、串口监视
-- QEMU 仿真构建与监视
-- K210 SDK/toolchain 探测与实验性固件构建
-- 固件内置只读运行时资源包：`runtime_bundle/`
-- 主机侧 `maix` API 包与 pytest 回归测试
-
-当前仍未完成：
-
+未完成：
 - 可写 VFS / 外部存储挂载
-- 板上模型文件加载闭环
-- 板上真实 AI 推理闭环
-- K210 实板启动、串口、FinSH、Python 运行时回归
+- 板上模型文件加载与 AI 推理闭环
+- K210 实板稳定回归
 
 ## 快速开始
 
-建议先初始化子模块并准备 Python 依赖：
-
 ```bash
+# 初始化子模块和依赖
 git submodule update --init --recursive
-python3 -m pip install -r requirements.txt
+pip install -r requirements.txt
+
+# 主机侧验证（Linux 模拟模式）
+pip install -e .
+python3 -c "from maix import *; print(version())"  # 1.0.0
+
+# 运行测试
+python3 -m pytest tests/ -v
 ```
 
-查看支持的平台：
+### 构建固件
 
 ```bash
-python3 project.py list-platforms
-```
-
-构建 STM32 真板固件：
-
-```bash
+# STM32 真板
 python3 project.py build -p rtthread
-```
-
-烧录 STM32 真板：
-
-```bash
 python3 project.py flash -p rtthread
-```
-
-监视 STM32 串口：
-
-```bash
 python3 project.py monitor -p rtthread -d /dev/ttyACM0
-```
 
-构建 QEMU 固件：
-
-```bash
+# QEMU 仿真
 python3 project.py build -p sim
-```
-
-启动 QEMU 监视面板：
-
-```bash
 python3 project.py monitor -p sim
-```
 
-探测 K210 SDK/toolchain：
-
-```bash
-python3 project.py k210-probe
-```
-
-构建 K210 实验固件：
-
-```bash
+# K210 实验
 python3 project.py build -p k210
-```
-
-烧录 K210 实验固件：
-
-```bash
 python3 project.py flash -p k210 -d /dev/ttyUSB0
 ```
 
-更新运行时资源包中的应用与模型：
+### 工具链
 
-```bash
-python3 project.py bundle --app-dir reference/examples/basic --model /tmp/model.tflite --labels /tmp/labels.txt
+工具链需自行获取：
+- STM32：`apt install gcc-arm-none-eabi` 或从 ARM 官网下载
+- K210：Kendryte RISC-V 工具链，解压到 `third_party/toolchains/kendryte-toolchain/`
+
+## Python API 示例
+
+```python
+from maix import GPIO, time
+from maix.camera import Camera
+from maix.display import Display
+
+# GPIO
+led = GPIO(0x00000005, GPIO.Mode.OUT)
+led.on()
+time.sleep_ms(500)
+led.off()
+
+# 摄像头 + 显示
+cam = Camera(320, 240, "RGB888")
+disp = Display(320, 240)
+img = cam.read()
+img.draw_string(10, 10, "Hello MaixPy", color=(255, 255, 255))
+disp.show(img)
+cam.close()
+disp.close()
 ```
 
-查看当前运行时资源包内容：
+```python
+from maix.spi import SPI
+from maix.i2c import I2C
+from maix.uart import UART
+from maix.adc import ADC, CH0
+from maix.pwm import PWM
 
-```bash
-python3 project.py bundle-info
+# SPI
+s = SPI(spi_id=1, baudrate=1_000_000)
+s.write(b"\x01\x02")
+rx = s.transfer(b"\xAA\xBB")
+s.close()
+
+# I2C
+bus = I2C(i2c_id=1, clock_speed=400_000)
+bus.mem_write(0x50, 0x00, b"\xFF")
+data = bus.mem_read(0x50, 0x00, 2)
+bus.close()
+
+# UART
+u = UART(uart_id=1, baudrate=115200)
+u.write(b"hello")
+u.close()
+
+# ADC
+a = ADC(adc_id=1, vref=3.3)
+voltage = a.read_vol(CH0)
+a.close()
+
+# PWM
+p = PWM(pwm_id=1, freq=1000, duty=50.0, enable=True)
+p.duty(75.0)
+p.close()
 ```
 
-## 目录分区
+## 目录结构
 
-当前仓库顶层按“系统实现 / 参考资料 / 测试回归”三块职责组织：
-
-```text
-boards/                           板卡元数据
-cmake/                            构建配置与工具链脚本
-components/                       核心组件实现
-maix/                             主机侧 Python API
-platforms/                        平台入口（STM32 / QEMU / K210）
-reference/                        参考文档与示例
-runtime/                          运行时骨架
-runtime_bundle/                   固件内置只读资源包
-tests/                            主机侧回归测试
-third_party/                      第三方源码、工具链与离线归档
-tools/                            构建 / 烧录 / 监视辅助工具
-project.py                        仓库统一入口
+```
+MaixPy-K210-STM32/
+├── maix/                          Python 包（核心 API）
+├── components/
+│   ├── hal/                       C HAL 抽象层
+│   ├── drivers/
+│   │   ├── stm32/                 STM32 平台驱动
+│   │   └── k210/                  K210 平台驱动
+│   └── micropython_rtthread/      MicroPython RT-Thread 端口 + _maix_hal 绑定
+├── runtime/                       固件运行时（启动、文件系统、AI 后端）
+├── runtime_bundle/                运行时资源包
+├── platforms/
+│   ├── stm32/                     STM32 链接脚本、启动文件
+│   ├── k210/                      K210 板级代码
+│   └── sim/                       QEMU 仿真
+├── cmake/                         CMake 工具链和模块
+├── tools/                         烧录、监控等工具脚本
+├── boards/                        板卡 JSON 配置
+├── tests/                         pytest 测试（198 个）
+├── reference/
+│   ├── docs/                      文档（架构、API、移植指南）
+│   └── examples/                  示例代码
+├── third_party/                   RT-Thread Nano、TFLite Micro、MaixPy-v1
+├── project.py                     统一构建入口
+├── setup.py / pyproject.toml      Python 打包
+└── requirements.txt               Python 依赖
 ```
 
-其中：
+## 设计原则
 
-- `reference/docs/` 放设计、结构、移植、FAQ 与快速开始文档
-- `reference/examples/` 放示例脚本
-- `tests/` 只放主机侧回归与 mock
-- `third_party/` 与 `MaixPy-v1/` 放上游依赖和参考源码，不承载主系统入口职责
+1. 一次构建只允许一个目标架构和一个板卡
+2. OS 主线固定为 RT-Thread Nano
+3. Python API 不暴露芯片私有语义，板级差异留在底层驱动
+4. 所有"已支持"能力必须可验证，不伪造成功闭环
+5. 新板卡优先扩展 `boards/` 和板级驱动，不另开独立目录
 
-## 能力边界
+## 文档
 
-QEMU 只用于它真实支持的能力验证，当前不会伪造以下结果：
+- [架构设计](reference/docs/architecture.md)
+- [快速开始](reference/docs/quickstart.md)
+- [API 参考](reference/docs/api_reference.md)
+- [项目结构](reference/docs/project_layout.md)
+- [硬件移植](reference/docs/hardware_porting.md)
+- [板卡配置](reference/docs/board_schema.md)
+- [FAQ](reference/docs/faq.md)
 
-- LED 可见行为
-- 摄像头
-- 显示
-- 模型推理
+## 许可证
 
-K210 方向当前也只承诺：
-
-- 已接上官方 SDK/toolchain 探测路径
-- 已能生成实验性固件产物
-- 已接上统一 CLI 的实验性烧录入口
-
-它目前不代表已经完成了真实开发板上的稳定回归。
-
-## 进一步阅读
-
-- [reference/docs/architecture.md](reference/docs/architecture.md)
-- [reference/docs/board_schema.md](reference/docs/board_schema.md)
-- [reference/docs/project_layout.md](reference/docs/project_layout.md)
-- [reference/docs/hardware_porting.md](reference/docs/hardware_porting.md)
-- [reference/docs/quickstart.md](reference/docs/quickstart.md)
-- [reference/docs/faq.md](reference/docs/faq.md)
-- [reference/README.md](reference/README.md)
-
-## 说明
-
-- Windows 下可使用 `run_windows.bat` 作为最小入口包装。
-- 构建产物、缓存目录和临时验证文件不应进入版本库。
-- 顶层板卡目录 `boards/` 表示“首批参考板注册”，不代表产品边界。
+Apache 2.0

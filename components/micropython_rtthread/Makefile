@@ -30,6 +30,7 @@ CFLAGS += $(MAIX_MPY_IDENTITY_CFLAGS)
 SRC_C = \
 	maix_mpy_port.c \
 	modmaix.c \
+	modmaix_hal.c \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c
 

@@ -10,6 +10,10 @@ extern "C" {
 #include "hal_spi.h"
 #include "hal_i2c.h"
 #include "hal_uart.h"
+#include "hal_pwm.h"
+#include "hal_adc.h"
+#include "hal_display.h"
+#include "hal_camera.h"
 
 /**
  * @brief STM32平台硬件抽象层
@@ -262,6 +266,16 @@ hal_ret_t stm32_dcmi_start_capture(uint8_t* buffer, size_t size);
 hal_ret_t stm32_dcmi_stop_capture(void);
 hal_ret_t stm32_dcmi_suspend_capture(void);
 hal_ret_t stm32_dcmi_resume_capture(void);
+bool stm32_dcmi_frame_ready(void);
+void stm32_dcmi_clear_frame_flag(void);
+
+// STM32 LCD (ST7789)
+hal_ret_t stm32_lcd_init(uint16_t width, uint16_t height);
+hal_ret_t stm32_lcd_show_frame(const uint16_t* buf);
+hal_ret_t stm32_lcd_fill(uint16_t color);
+
+// STM32 ADC DMA扫描（签名与stm32_adc_start_dma不同）
+hal_ret_t stm32_adc_start_scan_dma(uint32_t adc_id, const uint32_t* channels, uint32_t num);
 
 // STM32 CRC计算
 hal_ret_t stm32_crc_init(void);

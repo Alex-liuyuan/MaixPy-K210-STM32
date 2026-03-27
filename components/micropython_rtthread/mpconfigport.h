@@ -80,9 +80,11 @@ typedef long mp_off_t;
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 extern const struct _mp_obj_module_t mp_module_maix;
+extern const struct _mp_obj_module_t mp_module_maix_hal;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_maix), MP_ROM_PTR(&mp_module_maix) },
+    { MP_ROM_QSTR(MP_QSTR_maix), MP_ROM_PTR(&mp_module_maix) }, \
+    { MP_ROM_QSTR(MP_QSTR__maix_hal), MP_ROM_PTR(&mp_module_maix_hal) },
 
 #include <alloca.h>
 
