@@ -1,0 +1,14 @@
+#ifndef __MSH_CFG_H__
+#define __MSH_CFG_H__
+
+#define RT_USING_FINSH
+#define FINSH_USING_MSH
+#define FINSH_USING_MSH_ONLY
+
+#define FINSH_THREAD_PRIORITY 21
+#define FINSH_THREAD_STACK_SIZE 2048
+
+#define FINSH_USING_SYMTAB
+#define FINSH_USING_DESCRIPTION
+
+#endif

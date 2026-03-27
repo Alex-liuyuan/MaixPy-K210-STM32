@@ -1,0 +1,15 @@
+[submodule "MaixPy-v1"]
+	path = MaixPy-v1
+	url = https://github.com/sipeed/MaixPy-v1.git
+
+[submodule "third_party/flatbuffers-src"]
+	path = third_party/flatbuffers-src
+	url = https://github.com/google/flatbuffers.git
+
+[submodule "third_party/ruy-src"]
+	path = third_party/ruy-src
+	url = https://github.com/google/ruy.git
+
+[submodule "third_party/tflite-micro"]
+	path = third_party/tflite-micro
+	url = https://github.com/tensorflow/tflite-micro.git

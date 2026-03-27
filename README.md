@@ -1,11 +1,27 @@
-# MaixPy Nano RT-Thread
+# SYSU_AIOTOS
 
-面向 RT-Thread Nano 的 MaixPy 风格产品原型。
+面向 `ARM Cortex-M` 与 `RISC-V` 的跨架构 AIoT 操作系统框架原型，统一运行于 `RT-Thread Nano`。
 
-当前仓库只保留一条真实可交付主线：
+当前仓库的产品边界是：
+
+- `架构层`：兼容 `ARM Cortex-M` 与 `RISC-V`
+- `系统层`：统一 `RT-Thread Nano`
+- `运行时层`：统一 `MicroPython + VFS + 模型加载 + AI API`
+- `板级层`：`STM32F407` 与 `K210` 只是首批参考实现
+
+当前仓库里最成熟的一条真实可交付主线仍然是：
 
 - 真板：`STM32F407 Nucleo + RT-Thread Nano`
 - 仿真：`QEMU olimex-stm32-h405`
+
+同时，`RISC-V / K210` 方向已经进入“真实可构建，但仍属实验”的阶段：
+
+- 官方 `kendryte-standalone-sdk` 已纳入仓库期望路径
+- 官方 RISC-V GNU toolchain 已纳入 `third_party/toolchains/`
+- 可通过 `python3 project.py k210-probe` 真实验证 SDK/toolchain 构建链
+- 可通过 `python3 project.py build -p k210` 真实生成 `K210 + RT-Thread Nano + SYSU_AIOTOS` 实验固件
+
+但这还不是已经过实板验证的 `RISC-V` 产品主线，只能算首个 `RISC-V` 参考板落地样例。
 
 这条主线已经具备：
 
@@ -14,37 +30,64 @@
 - 串口 / semihosting 日志
 - 统一的产品运行时骨架
 - QEMU 最小可验证链路
+- 固件内置只读脚本包（`/boot.py`、`/main.py`）
+- 嵌入式 MicroPython 最小端口
+- MicroPython 端口构建参数化，不再把交叉前缀、架构参数、平台宏、BSP 头文件路径写死在 STM32F407
+- 固件内只读脚本包已接到 MicroPython 的 `open()` / `import` 路径
+- `boot.py` 与内置 app 脚本真实执行
+- Python / 模型后端探测与阻塞原因输出
 - 明确的能力声明，不伪造 AI / 摄像头 / 显示成功结果
 
 当前还没有完成：
 
-- 嵌入式 Python VM
-- `boot.py` / `main.py` 脚本加载
-- VFS / 模型文件加载
+- 可写 VFS / 外部存储挂载
+- 模型文件加载
 - 真正的板上模型推理闭环
+
+## 分层模型
+
+- `Arch`：ARM Cortex-M / RISC-V
+- `OS`：RT-Thread Nano
+- `Board`：板级适配与烧录方式
+- `Runtime`：MicroPython / VFS / 模型运行时
+- `Tooling`：构建 / 烧录 / 监视 / 仿真
+
+更正式的设计说明见：
+
+- `docs/architecture.md`
+- `docs/board_schema.md`
+- `docs/project_layout.md`
 
 ## 仓库结构
 
 ```text
-app/                              产品运行时骨架
-boards/                           当前板卡描述
+runtime/                          产品运行时骨架
+boards/                           板卡元数据注册
 cmake/                            CMake 与工具链配置
-components/drivers/stm32/         STM32 驱动
-components/hal/                   通用 HAL 接口
+components/drivers/stm32/         ARM Cortex-M 参考驱动实现
+components/drivers/k210/          RISC-V K210 参考驱动实现
+components/hal/                   通用 HAL 接口（仍需继续抽象）
 docs/                             当前产品文档
+examples/                         面向上层 API 的示例脚本
 maix/                             主机侧 API 与测试辅助
+platforms/                        平台专用入口（QEMU / K210）
 rtthread-nano-master/             RT-Thread Nano 内核与 F407 BSP
-sim/                              QEMU 仿真入口
 tests/                            主机回归测试
+third_party/                      工具链与离线归档
 tools/                            构建 / 烧录 / 监视工具
 ```
+
+仓库当前已经清理掉构建产物、缓存目录和未接入主链的旧脚本；工作树里不再保留 `build/`、`__pycache__/`、`.pytest_cache/` 这类噪音目录。
 
 ## 当前支持
 
 | 目标 | 状态 | 说明 |
 |------|------|------|
-| `rtthread` | 可用 | 构建 STM32F407 真板固件 |
+| `rtthread` | 可用 | 当前 ARM Cortex-M 参考板固件目标 |
 | `sim` | 可用 | 构建并运行 QEMU 验证链路 |
+| `k210` | 实验 | 当前 RISC-V 参考板固件目标；统一烧录入口依赖 `kflash_py` |
+
+当前 `boards/` 中的板卡不应被理解为“项目边界”，而应被理解为“跨架构框架的首批参考板”。
 
 ## 快速开始
 
@@ -60,9 +103,15 @@ python3 project.py build -p rtthread
 python3 project.py build -p sim
 ```
 
-启动 QEMU 监视面板：
+构建 K210 实验固件：
 
 ```bash
+python3 project.py build -p k210
+```
+
+启动 QEMU 监视面板：
+
+```bash 
 python3 project.py monitor -p sim
 ```
 
@@ -70,6 +119,12 @@ python3 project.py monitor -p sim
 
 ```bash
 python3 project.py flash -p rtthread
+```
+
+烧录 K210 实验固件：
+
+```bash
+python3 project.py flash -p k210 -d /dev/ttyUSB0
 ```
 
 串口监视：
@@ -85,9 +140,12 @@ python3 project.py monitor -p rtthread -d /dev/ttyACM0
 ```text
 maix_info
 maix_state
+maix_fs
+maix_py
+maix_model
 ```
 
-它们分别输出当前运行时能力边界和基本状态。
+它们分别输出运行时能力边界、基本状态、内置脚本包、Python 后端状态和模型后端状态。
 
 ## 真实边界
 
@@ -97,14 +155,33 @@ QEMU 只用于它真实支持的能力验证。当前不会在 QEMU 中伪造以
 - GPIO 可见外设行为
 - 摄像头
 - 显示
-- Python VM
 - 模型推理
+
+K210 当前也只承诺以下真实边界：
+
+- 已验证官方 SDK/toolchain 构建链
+- 已验证本仓库 K210 RT-Thread Nano 固件可以真实产出包含 MicroPython 端口的 `ELF/HEX/BIN`
+- 已把 MicroPython 端口构建层改成平台参数驱动，且不再把指针宽度固定死在 32 位
+- 已接入实验性的统一 K210 烧录 CLI，但本机仍需提供 `kflash_py`
+- 尚未在真实 K210 开发板上完成启动、串口、FinSH、Python 运行时回归
+- 尚未在真实 K210 开发板上完成烧录后回归
+
+## 当前新增的真实资源
+
+当前固件已经包含一个只读脚本包，并且已经能由最小嵌入式 MicroPython 端口真实执行：
+
+- `/boot.py`
+- `/main.py`
+- `/maixapp/apps/sysu_aiotos_demo/main.py`
+- `/models/README.txt`
+
+这些资源目前仍然是固件内只读资源，不是完整可写 VFS。
 
 ## 下一步
 
-要把这个仓库继续做成真正“类似 MaixPy”的产品，下一阶段必须按顺序完成：
+要把这个仓库继续做成真正可跨板演进的 `SYSU_AIOTOS` 产品底座，下一阶段必须按顺序完成：
 
-1. 接入嵌入式 Python VM。
-2. 接入 VFS 和脚本启动链。
-3. 接入模型文件装载与推理后端。
-4. 用第二种架构板卡做真实移植，再谈跨架构统一。
+1. 接入可写 VFS 与外部模型目录。
+2. 接入模型文件装载与推理后端。
+3. 补齐 `maix` 运行时 API，而不是只保留最小 `maix.app`。
+4. 把当前 `STM32F407/K210` 的板级经验收敛成可复制的 `ARM/RISC-V` 新板迁移规范。

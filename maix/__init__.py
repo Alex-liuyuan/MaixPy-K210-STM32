@@ -5,6 +5,7 @@ MaixPy Nano RT-Thread 核心模块
 import sys
 import os
 import time as _time
+from pathlib import Path
 
 # 版本信息
 __version__ = "0.1.0"
@@ -166,6 +167,88 @@ class App:
         """退出应用"""
         self._exit_flag = True
 
+
+def _bundle_root():
+    return Path(__file__).resolve().parents[1] / "runtime_bundle"
+
+
+def _detect_default_model_path():
+    bundle_dir = _bundle_root() / "models"
+    candidates = [
+        bundle_dir / "model.tflite",
+        bundle_dir / "model.kmodel",
+        bundle_dir / "main.tflite",
+        bundle_dir / "main.kmodel",
+    ]
+    for path in candidates:
+        if path.exists():
+            return str(path)
+    return None
+
+
+def _detect_default_labels_path(model_path=None):
+    bundle_dir = _bundle_root() / "models"
+    candidates = []
+    if model_path:
+        model = Path(model_path)
+        candidates.append(model.with_suffix(".txt"))
+    candidates.extend(
+        [
+            bundle_dir / "labels.txt",
+            bundle_dir / "model.txt",
+            bundle_dir / "classes.txt",
+        ]
+    )
+    for path in candidates:
+        if path.exists():
+            return str(path)
+    return None
+
+
+class Model:
+    """统一模型信息接口"""
+
+    def path(self):
+        return _detect_default_model_path()
+
+    def exists(self):
+        return self.path() is not None
+
+    def format(self):
+        model_path = self.path()
+        if not model_path:
+            return "none"
+        if model_path.endswith(".tflite"):
+            return "tflite"
+        if model_path.endswith(".kmodel"):
+            return "kmodel"
+        return "unknown"
+
+    def labels_path(self):
+        return _detect_default_labels_path(self.path())
+
+    def size(self):
+        model_path = self.path()
+        if not model_path:
+            return 0
+        try:
+            return Path(model_path).stat().st_size
+        except OSError:
+            return 0
+
+    def backend(self):
+        return "bundle" if self.exists() else "missing"
+
+    def info(self):
+        return {
+            "path": self.path(),
+            "format": self.format(),
+            "labels_path": self.labels_path(),
+            "size": self.size(),
+            "backend": self.backend(),
+            "present": self.exists(),
+        }
+
 # 系统信息模块
 class Sys:
     """系统信息接口"""
@@ -264,6 +347,7 @@ class GPIO:
 # 创建全局实例
 time = Time()
 app = App()
+model = Model()
 sys = Sys()
 
 # 平台信息
@@ -286,5 +370,5 @@ def delay_us(us):
 
 import logging as _logging
 _log = _logging.getLogger("maix")
-_log.debug(f"[MaixPy Nano RT-Thread] 初始化完成，当前平台: {_current_platform}")
-_log.debug(f"[MaixPy Nano RT-Thread] 版本: {__version__}")
+_log.debug(f"[SYSU_AIOTOS] 初始化完成，当前平台: {_current_platform}")
+_log.debug(f"[SYSU_AIOTOS] 版本: {__version__}")

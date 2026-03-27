@@ -10,7 +10,7 @@ extern "C" {
 /**
  * @brief I2C硬件抽象层接口
  * @file hal_i2c.h
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // I2C设备句柄

@@ -34,7 +34,7 @@
 
 // <o>the size of main thread<1-4086>
 //  <i>Default: 512
-#define RT_MAIN_THREAD_STACK_SIZE 4096
+#define RT_MAIN_THREAD_STACK_SIZE 32768
 // </h>
 
 // <h>Debug Configuration
@@ -114,7 +114,7 @@
 // </c>
 // <c1>Dynamic Heap Management
 //  <i>Dynamic Heap Management
-//#define RT_USING_HEAP
+#define RT_USING_HEAP
 // </c>
 // <c1>using small memory
 //  <i>using small memory

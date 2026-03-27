@@ -124,3 +124,32 @@ def test_nn_unload():
     assert nn.loaded
     nn.unload()
     assert not nn.loaded
+
+
+def test_model_info_helper(monkeypatch):
+    from maix import model
+
+    monkeypatch.setattr(model, "path", lambda: "/tmp/demo_model.tflite")
+    monkeypatch.setattr(model, "labels_path", lambda: "/tmp/demo_model.txt")
+    monkeypatch.setattr(model, "exists", lambda: True)
+    monkeypatch.setattr(model, "size", lambda: 128)
+
+    info = model.info()
+    assert info["path"] == "/tmp/demo_model.tflite"
+    assert info["format"] == "tflite"
+    assert info["labels_path"] == "/tmp/demo_model.txt"
+    assert info["backend"] == "bundle"
+    assert info["present"] is True
+
+
+def test_neural_network_uses_default_model(monkeypatch):
+    import maix.nn as nn_mod
+
+    monkeypatch.setattr(nn_mod._model_info, "path", lambda: "/tmp/default_model.tflite")
+    monkeypatch.setattr(nn_mod._model_info, "labels_path", lambda: "/tmp/default_model.txt")
+
+    nn = nn_mod.NeuralNetwork()
+    assert nn.model_path == "/tmp/default_model.tflite"
+    assert nn.loaded is True
+    assert nn.info()["backend"] == "bundle"
+    assert nn.info()["labels_path"] == "/tmp/default_model.txt"

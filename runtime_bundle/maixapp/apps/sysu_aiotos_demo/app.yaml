@@ -1,0 +1,7 @@
+id: sysu_aiotos_demo
+name: SYSU_AIOTOS Demo
+version: 0.1.0
+author: local
+files:
+  - app.yaml
+  - main.py

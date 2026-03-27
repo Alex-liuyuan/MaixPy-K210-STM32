@@ -1,0 +1,10 @@
+build/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.a
+
+maix/__pycache__/
+tests/__pycache__/
+tools/__pycache__/

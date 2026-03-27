@@ -6,7 +6,7 @@
 #include "stm32_hal.h"
 #include <string.h>
 
-#if defined(CONFIG_PLATFORM_STM32F407) || defined(CONFIG_PLATFORM_STM32F767) || defined(CONFIG_PLATFORM_STM32H743)
+#if defined(CONFIG_PLATFORM_STM32F407)
 
 static DCMI_HandleTypeDef  s_hdcmi;
 static DMA_HandleTypeDef   s_hdma_dcmi;

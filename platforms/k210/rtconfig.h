@@ -1,0 +1,23 @@
+#ifndef __RTTHREAD_CFG_H__
+#define __RTTHREAD_CFG_H__
+
+#define RT_THREAD_PRIORITY_MAX 32
+#define RT_TICK_PER_SECOND 1000
+#define RT_ALIGN_SIZE 8
+#define RT_NAME_MAX 8
+
+#define RT_USING_COMPONENTS_INIT
+#define RT_USING_USER_MAIN
+#define RT_MAIN_THREAD_STACK_SIZE 32768
+
+#define RT_USING_SEMAPHORE
+
+#define RT_USING_HEAP
+#define RT_USING_SMALL_MEM
+
+#define RT_USING_CONSOLE
+#define RT_CONSOLEBUF_SIZE 256
+
+#include "finsh_config.h"
+
+#endif

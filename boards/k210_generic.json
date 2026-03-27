@@ -1,0 +1,21 @@
+{
+  "name": "K210 Generic Board",
+  "platform": "k210",
+  "status": "experimental",
+  "arch": "riscv64",
+  "arch_family": "riscv",
+  "soc_family": "kendryte-k210",
+  "mcu": "k210",
+  "os": "rtthread-nano",
+  "build": {
+    "artifact_prefix": "SYSU_AIOTOS_k210"
+  },
+  "notes": "Experimental RT-Thread Nano K210 firmware build is integrated. Unified flashing is available when kflash_py is present, but on-board regression is still pending.",
+  "kflash": {
+    "board": "auto",
+    "baud": 115200
+  },
+  "uart": {
+    "baud": 115200
+  }
+}

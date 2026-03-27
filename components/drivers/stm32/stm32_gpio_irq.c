@@ -7,7 +7,7 @@
 #include "hal_gpio.h"
 #include <string.h>
 
-#if defined(CONFIG_PLATFORM_STM32F407) || defined(CONFIG_PLATFORM_STM32F767) || defined(CONFIG_PLATFORM_STM32H743)
+#if defined(CONFIG_PLATFORM_STM32F407)
 
 #define GPIO_IRQ_MAX_PINS 16
 

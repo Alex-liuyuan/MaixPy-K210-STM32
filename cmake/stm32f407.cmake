@@ -16,8 +16,8 @@ set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} ${CPU_FLAGS}")
 set(CMAKE_ASM_FLAGS_INIT "${CMAKE_ASM_FLAGS_INIT} ${CPU_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} ${CPU_FLAGS}")
 
-set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/startup/startup_stm32f407xx.s")
-set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/linker/stm32f407_flash.ld")
+set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/platforms/stm32/startup/startup_stm32f407xx.s")
+set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/platforms/stm32/linker/stm32f407_flash.ld")
 
 # Flash/RAM 大小（用于链接脚本生成参考）
 set(FLASH_SIZE 0x100000)   # 1MB

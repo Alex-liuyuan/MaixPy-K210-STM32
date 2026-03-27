@@ -12,7 +12,7 @@ from tools.run import load_board, monitor_serial
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="打开 MaixPy Nano RT-Thread 串口监视器")
+    parser = argparse.ArgumentParser(description="打开 SYSU_AIOTOS 串口监视器")
     parser.add_argument("--board", help="boards/*.json 中的板卡名")
     parser.add_argument("--port", help="串口设备")
     parser.add_argument("--baud", type=int, default=115200, help="串口波特率")

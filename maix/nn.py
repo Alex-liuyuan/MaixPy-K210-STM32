@@ -4,7 +4,7 @@ MaixPy Nano RT-Thread 神经网络模块
 
 import os
 import numpy as np
-from . import _current_platform
+from . import _current_platform, model as _model_info
 
 
 def _running_on_host():
@@ -53,14 +53,16 @@ class NeuralNetwork:
         Args:
             model_path: 模型文件路径
         """
-        self.model_path = model_path
+        self.model_path = model_path or _model_info.path()
         self.model = None
         self.input_shape = None
         self.output_shape = None
         self.loaded = False
-        
-        if model_path:
-            self.load(model_path)
+        self.model_format = None
+        self.model_backend = "missing"
+
+        if self.model_path:
+            self.load(self.model_path)
     
     def load(self, model_path):
         """
@@ -75,11 +77,28 @@ class NeuralNetwork:
             raise FileNotFoundError(f"模型文件不存在: {model_path}")
         
         self.model_path = model_path
+        self.model_format = self._infer_model_format(model_path)
+        self.model_backend = self._infer_model_backend(model_path)
         
         if _current_platform == 'stm32':
             self._load_stm32_model(model_path)
         else:
             self._load_mock_model(model_path)
+
+    def _infer_model_format(self, model_path):
+        if not model_path:
+            return "none"
+        if model_path.endswith(".tflite"):
+            return "tflite"
+        if model_path.endswith(".kmodel"):
+            return "kmodel"
+        return "unknown"
+
+    def _infer_model_backend(self, model_path):
+        default_path = _model_info.path()
+        if model_path and default_path and os.path.abspath(model_path) == os.path.abspath(default_path):
+            return "bundle"
+        return "external"
     
     def _load_stm32_model(self, model_path):
         """加载 STM32 TFLite 模型（主机测试阶段通过 mock HAL）"""
@@ -155,6 +174,17 @@ class NeuralNetwork:
             self.loaded = False
             print("[NN] 模型已卸载")
 
+    def info(self):
+        return {
+            "path": self.model_path,
+            "format": self.model_format or self._infer_model_format(self.model_path),
+            "backend": self.model_backend,
+            "labels_path": _model_info.labels_path(),
+            "loaded": self.loaded,
+            "input_shape": self.input_shape,
+            "output_shape": self.output_shape,
+        }
+
 
 class Classifier(NeuralNetwork):
     """图像分类器"""
@@ -171,10 +201,17 @@ class Classifier(NeuralNetwork):
         self.labels = labels or []
         
         # 如果没有提供标签，尝试加载标签文件
-        if not self.labels and model_path:
-            label_path = model_path.replace('.tflite', '.txt')
-            if os.path.exists(label_path):
+        if not self.labels:
+            label_path = self._resolve_labels_path(model_path or self.model_path)
+            if label_path and os.path.exists(label_path):
                 self._load_labels(label_path)
+
+    def _resolve_labels_path(self, model_path):
+        if _model_info.labels_path():
+            return _model_info.labels_path()
+        if model_path:
+            return os.path.splitext(model_path)[0] + ".txt"
+        return None
     
     def _load_labels(self, label_path):
         """加载标签文件"""
@@ -249,10 +286,17 @@ class Detector(NeuralNetwork):
         self.labels = labels or []
         self.threshold = threshold
         
-        if not self.labels and model_path:
-            label_path = model_path.replace('.tflite', '.txt')
-            if os.path.exists(label_path):
+        if not self.labels:
+            label_path = self._resolve_labels_path(model_path or self.model_path)
+            if label_path and os.path.exists(label_path):
                 self._load_labels(label_path)
+
+    def _resolve_labels_path(self, model_path):
+        if _model_info.labels_path():
+            return _model_info.labels_path()
+        if model_path:
+            return os.path.splitext(model_path)[0] + ".txt"
+        return None
     
     def _load_labels(self, label_path):
         """加载标签文件"""

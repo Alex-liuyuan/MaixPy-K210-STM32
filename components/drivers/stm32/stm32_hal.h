@@ -14,19 +14,15 @@ extern "C" {
 /**
  * @brief STM32平台硬件抽象层
  * @file stm32_hal.h
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // STM32特定包含
-#ifdef CONFIG_PLATFORM_STM32F407
+#if defined(CONFIG_PLATFORM_STM32F407)
 #include "stm32f4xx_hal.h"
 #define STM32_FAMILY_F4
-#elif defined(CONFIG_PLATFORM_STM32F767)
-#include "stm32f7xx_hal.h"
-#define STM32_FAMILY_F7
-#elif defined(CONFIG_PLATFORM_STM32H743)
-#include "stm32h7xx_hal.h"
-#define STM32_FAMILY_H7
+#else
+#error "Current product branch only supports CONFIG_PLATFORM_STM32F407"
 #endif
 
 // STM32 GPIO端口定义
@@ -150,6 +146,8 @@ hal_ret_t stm32_spi_transmit(hal_spi_handle_t handle, const uint8_t* tx_data, si
 hal_ret_t stm32_spi_receive(hal_spi_handle_t handle, uint8_t* rx_data, size_t size, uint32_t timeout);
 hal_ret_t stm32_spi_transmit_receive(hal_spi_handle_t handle, const uint8_t* tx_data, 
                                     uint8_t* rx_data, size_t size, uint32_t timeout);
+hal_ret_t stm32_spi_transmit_dma(hal_spi_handle_t handle, const uint8_t* tx_data,
+                                 size_t size);
 
 // STM32 I2C操作
 hal_ret_t stm32_i2c_init(hal_i2c_handle_t* handle, uint32_t i2c_id, const hal_i2c_config_t* config);
@@ -158,12 +156,20 @@ hal_ret_t stm32_i2c_master_transmit(hal_i2c_handle_t handle, uint16_t device_add
                                    const uint8_t* tx_data, size_t size, uint32_t timeout);
 hal_ret_t stm32_i2c_master_receive(hal_i2c_handle_t handle, uint16_t device_addr,
                                   uint8_t* rx_data, size_t size, uint32_t timeout);
+hal_ret_t stm32_i2c_mem_write(hal_i2c_handle_t handle, uint16_t device_addr,
+                              uint16_t mem_addr, uint16_t mem_addr_size,
+                              const uint8_t* data, size_t size, uint32_t timeout);
+hal_ret_t stm32_i2c_mem_read(hal_i2c_handle_t handle, uint16_t device_addr,
+                             uint16_t mem_addr, uint16_t mem_addr_size,
+                             uint8_t* data, size_t size, uint32_t timeout);
 
 // STM32 UART操作
 hal_ret_t stm32_uart_init(hal_uart_handle_t* handle, uint32_t uart_id, const hal_uart_config_t* config);
 hal_ret_t stm32_uart_deinit(hal_uart_handle_t handle);
 hal_ret_t stm32_uart_transmit(hal_uart_handle_t handle, const uint8_t* tx_data, size_t size, uint32_t timeout);
 hal_ret_t stm32_uart_receive(hal_uart_handle_t handle, uint8_t* rx_data, size_t size, uint32_t timeout);
+uint16_t stm32_uart_read_dma(hal_uart_handle_t handle, uint8_t* buf, uint16_t max_len);
+void stm32_uart_idle_irq_handler(uint32_t uart_id);
 
 // STM32时钟系统
 hal_ret_t stm32_rcc_set_system_clock(uint32_t frequency);

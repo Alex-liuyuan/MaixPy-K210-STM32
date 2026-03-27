@@ -1,0 +1,4 @@
+task=classification
+default=hello_world_int8.tflite
+tflite=hello_world_int8.tflite
+labels=labels.txt

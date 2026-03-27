@@ -1,3 +1,0 @@
-/root/myproject/adam/MaixPy-K210-STM32/build/sim/CMakeFiles/MaixPy_sim.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/sim/CMakeFiles/edit_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/sim/CMakeFiles/rebuild_cache.dir

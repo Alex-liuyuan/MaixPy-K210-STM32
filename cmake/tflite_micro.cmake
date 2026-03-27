@@ -14,6 +14,7 @@ if(NOT EXISTS "${TFLITE_MICRO_DIR}/tensorflow/lite/micro/micro_interpreter.h")
         "或设置 -DTFLITE_MICRO_DIR=<路径>")
     # 创建空占位目标，避免后续 target_link_libraries 报错
     add_library(tflite_micro INTERFACE)
+    target_compile_definitions(tflite_micro INTERFACE MAIX_HAS_TFLITE_MICRO=0)
     return()
 endif()
 
@@ -41,6 +42,7 @@ target_include_directories(tflite_micro PUBLIC
 )
 
 target_compile_definitions(tflite_micro PUBLIC
+    MAIX_HAS_TFLITE_MICRO=1
     TF_LITE_STATIC_MEMORY
     TF_LITE_DISABLE_X86_NEON
 )

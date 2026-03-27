@@ -7,7 +7,7 @@
 #include "hal_i2c.h"
 #include <string.h>
 
-#if defined(CONFIG_PLATFORM_STM32F407) || defined(CONFIG_PLATFORM_STM32F767) || defined(CONFIG_PLATFORM_STM32H743)
+#if defined(CONFIG_PLATFORM_STM32F407)
 
 #define I2C_INSTANCE_MAX 4
 

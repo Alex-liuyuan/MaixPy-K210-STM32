@@ -9,8 +9,8 @@ extern "C" {
 
 /**
  * @brief SPI硬件抽象层接口
- * @file hal_spi.h  
- * @author MaixPy-K210-STM32 Team
+ * @file hal_spi.h
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // SPI设备句柄

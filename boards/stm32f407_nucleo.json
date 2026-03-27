@@ -3,6 +3,13 @@
   "platform": "rtthread",
   "status": "stable",
   "arch": "arm",
+  "arch_family": "arm-cortex-m",
+  "soc_family": "stm32f4",
+  "mcu": "stm32f407",
+  "os": "rtthread-nano",
+  "build": {
+    "artifact_prefix": "SYSU_AIOTOS_rtthread"
+  },
   "led_pin": "PA5",
   "uart": {
     "baud": 115200

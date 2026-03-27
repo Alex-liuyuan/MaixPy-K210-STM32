@@ -71,7 +71,7 @@ target_sources(stm32_drivers PRIVATE ${STM32_VENDOR_SRCS})
 target_include_directories(stm32_drivers PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/components/hal
-    ${CMAKE_SOURCE_DIR}/app
+    ${CMAKE_SOURCE_DIR}/runtime
     ${STM32_VENDOR_INCLUDES}
 )
 

@@ -12,16 +12,14 @@ extern "C" {
 /**
  * @brief 硬件抽象层通用定义
  * @file hal_common.h
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // 平台定义
 typedef enum {
     HAL_PLATFORM_UNKNOWN = 0,
-    HAL_PLATFORM_K210,
     HAL_PLATFORM_STM32F407,
-    HAL_PLATFORM_STM32F767,
-    HAL_PLATFORM_STM32H743,
+    HAL_PLATFORM_K210,
     HAL_PLATFORM_LINUX
 } hal_platform_t;
 

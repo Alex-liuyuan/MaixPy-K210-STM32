@@ -1,9 +1,0 @@
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/CMakeFiles/maix_hal_module.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/CMakeFiles/edit_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/CMakeFiles/rebuild_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/components/drivers/stm32/CMakeFiles/stm32_drivers.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/components/drivers/stm32/CMakeFiles/edit_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/components/drivers/stm32/CMakeFiles/rebuild_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/rtos/CMakeFiles/rtthread_nano.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/rtos/CMakeFiles/edit_cache.dir
-/root/myproject/adam/MaixPy-K210-STM32/build/rtthread/rtos/CMakeFiles/rebuild_cache.dir

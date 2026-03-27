@@ -10,7 +10,7 @@ extern "C" {
 /**
  * @brief UART硬件抽象层接口
  * @file hal_uart.h
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // UART设备句柄

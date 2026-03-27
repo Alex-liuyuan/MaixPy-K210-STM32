@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if defined(CONFIG_PLATFORM_STM32F407) || defined(CONFIG_PLATFORM_STM32F767) || defined(CONFIG_PLATFORM_STM32H743)
+#if defined(CONFIG_PLATFORM_STM32F407)
 
 static inline USART_TypeDef *maix_stdio_uart(void)
 {

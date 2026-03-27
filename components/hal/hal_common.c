@@ -7,10 +7,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(CONFIG_PLATFORM_STM32F407)
+#include "stm32_hal.h"
+#elif defined(__linux__)
+#include <sys/time.h>
+#include <unistd.h>
+#endif
+
 /**
  * @brief HAL通用实现
  * @file hal_common.c
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // 全局变量
@@ -20,14 +27,10 @@ static bool g_hal_initialized = false;
 
 // 平台检测
 static hal_platform_t detect_platform(void) {
-#ifdef CONFIG_PLATFORM_K210
-    return HAL_PLATFORM_K210;
-#elif defined(CONFIG_PLATFORM_STM32F407)
+#ifdef CONFIG_PLATFORM_STM32F407
     return HAL_PLATFORM_STM32F407;
-#elif defined(CONFIG_PLATFORM_STM32F767)
-    return HAL_PLATFORM_STM32F767;
-#elif defined(CONFIG_PLATFORM_STM32H743)
-    return HAL_PLATFORM_STM32H743;
+#elif defined(CONFIG_PLATFORM_K210)
+    return HAL_PLATFORM_K210;
 #elif defined(__linux__)
     return HAL_PLATFORM_LINUX;
 #else
@@ -57,16 +60,14 @@ hal_ret_t hal_init(void) {
     
     // 平台特定初始化
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210特定初始化
-            break;
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32特定初始化
+            if (stm32_hal_init() != MAIX_HAL_OK) {
+                return MAIX_HAL_ERROR;
+            }
+            break;
+        case HAL_PLATFORM_K210:
             break;
         case HAL_PLATFORM_LINUX:
-            // Linux模拟初始化
             break;
         default:
             return MAIX_HAL_NOT_SUPPORTED;
@@ -83,10 +84,7 @@ hal_platform_t hal_get_platform(void) {
 
 const char* hal_get_platform_name(void) {
     switch (g_platform) {
-        case HAL_PLATFORM_K210: return "K210";
         case HAL_PLATFORM_STM32F407: return "STM32F407";
-        case HAL_PLATFORM_STM32F767: return "STM32F767";
-        case HAL_PLATFORM_STM32H743: return "STM32H743";
         case HAL_PLATFORM_LINUX: return "Linux";
         default: return "Unknown";
     }
@@ -95,17 +93,14 @@ const char* hal_get_platform_name(void) {
 // 系统控制函数
 void hal_system_reset(void) {
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210复位实现
-            break;
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32复位实现
-            // HAL_NVIC_SystemReset();
+#if defined(CONFIG_PLATFORM_STM32F407)
+            HAL_NVIC_SystemReset();
+#endif
+            break;
+        case HAL_PLATFORM_K210:
             break;
         case HAL_PLATFORM_LINUX:
-            // Linux模拟复位
             break;
         default:
             break;
@@ -114,19 +109,15 @@ void hal_system_reset(void) {
 
 void hal_system_delay_ms(uint32_t ms) {
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210延时实现
-            // msleep(ms);
-            break;
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32延时实现
-            // HAL_Delay(ms);
+#if defined(CONFIG_PLATFORM_STM32F407)
+            HAL_Delay(ms);
+#endif
+            break;
+        case HAL_PLATFORM_K210:
             break;
         case HAL_PLATFORM_LINUX:
-            // Linux延时实现
-            // usleep(ms * 1000);
+            usleep(ms * 1000);
             break;
         default:
             break;
@@ -135,19 +126,15 @@ void hal_system_delay_ms(uint32_t ms) {
 
 void hal_system_delay_us(uint32_t us) {
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210微秒延时
-            // usleep(us);
-            break;
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32微秒延时
-            // 需要实现高精度延时
+            if (us > 0) {
+                HAL_Delay((us + 999) / 1000);
+            }
+            break;
+        case HAL_PLATFORM_K210:
             break;
         case HAL_PLATFORM_LINUX:
-            // Linux微秒延时
-            // usleep(us);
+            usleep(us);
             break;
         default:
             break;
@@ -158,21 +145,20 @@ hal_time_t hal_system_get_time(void) {
     hal_time_t time = {0, 0};
     
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210时间获取
-            break;
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32时间获取
+            time.seconds = HAL_GetTick() / 1000U;
+            time.microseconds = (HAL_GetTick() % 1000U) * 1000U;
+            break;
+        case HAL_PLATFORM_K210:
             break;
         case HAL_PLATFORM_LINUX:
-            // Linux时间获取
-            // struct timeval tv;
-            // gettimeofday(&tv, NULL);
-            // time.seconds = tv.tv_sec;
-            // time.microseconds = tv.tv_usec;
+        {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            time.seconds = (uint32_t)tv.tv_sec;
+            time.microseconds = (uint32_t)tv.tv_usec;
             break;
+        }
         default:
             break;
     }
@@ -182,18 +168,16 @@ hal_time_t hal_system_get_time(void) {
 
 uint32_t hal_system_get_tick(void) {
     switch (g_platform) {
-        case HAL_PLATFORM_K210:
-            // K210系统滴答
-            return 0; // 需要实现
         case HAL_PLATFORM_STM32F407:
-        case HAL_PLATFORM_STM32F767:
-        case HAL_PLATFORM_STM32H743:
-            // STM32系统滴答
-            // return HAL_GetTick();
+            return HAL_GetTick();
+        case HAL_PLATFORM_K210:
             return 0;
         case HAL_PLATFORM_LINUX:
-            // Linux系统滴答
-            return 0; // 需要实现
+        {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            return (uint32_t)((tv.tv_sec * 1000ULL) + (tv.tv_usec / 1000ULL));
+        }
         default:
             return 0;
     }

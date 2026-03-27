@@ -90,11 +90,8 @@ void maix_board_fill_profile(maix_runtime_profile_t *profile)
   profile->console_name = "USART2 @ 115200 8N1";
   profile->cpu_arch = "arm-cortex-m4";
   profile->led = MAIX_CAP_AVAILABLE;
-  profile->storage = MAIX_CAP_PLANNED;
   profile->camera = MAIX_CAP_PLANNED;
   profile->display = MAIX_CAP_PLANNED;
-  profile->python_vm = MAIX_CAP_PLANNED;
-  profile->model_runtime = MAIX_CAP_PLANNED;
 }
 
 void maix_board_heartbeat(unsigned long heartbeat_count)

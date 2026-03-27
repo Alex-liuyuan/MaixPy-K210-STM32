@@ -4,7 +4,7 @@ tools/qemu_monitor.py
 启动 QEMU 仿真，实时读取 semihosting 输出，通过 WebSocket 推送到浏览器。
 
 用法：
-  python3 tools/qemu_monitor.py [--elf build/sim/MaixPy_sim.elf] [--port 8765]
+  python3 tools/qemu_monitor.py [--elf build/sim/SYSU_AIOTOS_sim.elf] [--port 8765]
   然后浏览器打开 http://localhost:8766
 """
 
@@ -433,7 +433,7 @@ def main():
     parser = argparse.ArgumentParser(description="QEMU RT-Thread 实时监控")
     parser.add_argument(
         "--elf",
-        default=str(Path(__file__).parent.parent / "build/sim/MaixPy_sim.elf"),
+        default=str(Path(__file__).parent.parent / "build/sim/SYSU_AIOTOS_sim.elf"),
     )
     parser.add_argument("--ws-port",   type=int, default=8765)
     parser.add_argument("--http-port", type=int, default=8766)

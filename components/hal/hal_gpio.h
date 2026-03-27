@@ -10,7 +10,7 @@ extern "C" {
 /**
  * @brief GPIO硬件抽象层接口
  * @file hal_gpio.h
- * @author MaixPy-K210-STM32 Team
+ * @author MaixPy Nano RT-Thread Team
  */
 
 // GPIO引脚状态
