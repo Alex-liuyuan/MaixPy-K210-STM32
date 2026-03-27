@@ -1,6 +1,7 @@
 [submodule "MaixPy-v1"]
 	path = MaixPy-v1
 	url = https://github.com/sipeed/MaixPy-v1.git
+	ignore = dirty
 
 [submodule "third_party/flatbuffers-src"]
 	path = third_party/flatbuffers-src

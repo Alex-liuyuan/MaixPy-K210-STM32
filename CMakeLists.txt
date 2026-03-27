@@ -67,7 +67,7 @@ add_subdirectory(components/hal)
 add_subdirectory(components/drivers/stm32)
 
 add_subdirectory(
-    rtthread-nano-master/rt-thread/bsp/stm32f407-msh/Middlewares/Third_Party/RealThread_RTOS
+    third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh/Middlewares/Third_Party/RealThread_RTOS
     rtos
 )
 include(cmake/tflite_micro.cmake)

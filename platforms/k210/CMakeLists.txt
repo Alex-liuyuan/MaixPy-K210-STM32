@@ -17,7 +17,7 @@ set(MAIX_RUNTIME_BUNDLE_DIR "${PROJECT_ROOT}/runtime_bundle" CACHE PATH "Runtime
 set(MAIX_RUNTIME_BUNDLE_HEADER "${CMAKE_BINARY_DIR}/generated/maix_runtime_bundle_autogen.h")
 file(GLOB_RECURSE MAIX_RUNTIME_BUNDLE_INPUTS CONFIGURE_DEPENDS "${MAIX_RUNTIME_BUNDLE_DIR}/*")
 
-set(RTTHREAD_DIR "${PROJECT_ROOT}/rtthread-nano-master/rt-thread")
+set(RTTHREAD_DIR "${PROJECT_ROOT}/third_party/rtthread-nano/rt-thread")
 set(K210_SDK_DIR "${PROJECT_ROOT}/MaixPy-v1/components/kendryte_sdk/kendryte-standalone-sdk")
 set(K210_SDK_LIB "${PROJECT_ROOT}/build/k210_sdk_probe/lib/libkendryte_rtthread.a")
 set(K210_NNCASE_WRAPPER_LIB "${PROJECT_ROOT}/build/k210_sdk_probe/lib/nncase/libnncase-wrapper.a")

@@ -36,14 +36,12 @@
   `platforms/k210/` 为 K210 实验性固件入口
   `platforms/stm32/` 为 STM32 专用启动文件与链接脚本
 
-- `rtthread-nano-master/`
-  RT-Thread Nano 内核与现有 BSP 参考代码。
-
 - `tests/`
   主机侧回归测试与 mock HAL。
 
 - `third_party/`
   第三方依赖与离线资源。
+  `rtthread-nano/` RT-Thread Nano 内核与现有 BSP 参考代码
   `toolchains/` 当前实际使用的交叉工具链
   `archives/` 仅保留归档包，不参与主线构建
 

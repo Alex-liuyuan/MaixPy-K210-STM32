@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(ROOT     ${CMAKE_SOURCE_DIR})
-set(BSP_DIR  ${ROOT}/rtthread-nano-master/rt-thread/bsp/stm32f407-msh)
+set(BSP_DIR  ${ROOT}/third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh)
 set(RTOS_DIR ${BSP_DIR}/Middlewares/Third_Party/RealThread_RTOS)
 set(HAL_DIR  ${BSP_DIR}/Drivers/STM32F4xx_HAL_Driver)
 set(CMSIS_DIR ${BSP_DIR}/Drivers/CMSIS)

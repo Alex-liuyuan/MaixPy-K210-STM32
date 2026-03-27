@@ -43,9 +43,9 @@
 
 ## STM32 侧关键位置
 
-- 板级应用入口：`rtthread-nano-master/rt-thread/bsp/stm32f407-msh/Core/Src/main.c`
-- UART MSP：`rtthread-nano-master/rt-thread/bsp/stm32f407-msh/Core/Src/stm32f4xx_hal_msp.c`
-- RT-Thread 控制台：`rtthread-nano-master/rt-thread/bsp/stm32f407-msh/Middlewares/Third_Party/RealThread_RTOS/bsp/_template/cubemx_config/board.c`
+- 板级应用入口：`third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh/Core/Src/main.c`
+- UART MSP：`third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh/Core/Src/stm32f4xx_hal_msp.c`
+- RT-Thread 控制台：`third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh/Middlewares/Third_Party/RealThread_RTOS/bsp/_template/cubemx_config/board.c`
 - 板卡模板：`boards/`
 
 ## K210 侧关键位置

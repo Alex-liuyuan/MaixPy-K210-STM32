@@ -70,10 +70,9 @@ components/hal/                   通用 HAL 接口（仍需继续抽象）
 docs/                             当前产品文档
 examples/                         面向上层 API 的示例脚本
 maix/                             主机侧 API 与测试辅助
-platforms/                        平台专用入口（QEMU / K210）
-rtthread-nano-master/             RT-Thread Nano 内核与 F407 BSP
+platforms/                        平台专用入口（STM32 / QEMU / K210）
 tests/                            主机回归测试
-third_party/                      工具链与离线归档
+third_party/                      第三方源码、工具链与离线归档
 tools/                            构建 / 烧录 / 监视工具
 ```
 

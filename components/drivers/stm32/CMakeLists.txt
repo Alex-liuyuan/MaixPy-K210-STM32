@@ -16,7 +16,7 @@ set(STM32_VENDOR_SRCS "")
 set(STM32_VENDOR_INCLUDES "")
 
 set(STM32_F407_BSP_DIR
-    "${CMAKE_SOURCE_DIR}/rtthread-nano-master/rt-thread/bsp/stm32f407-msh")
+    "${CMAKE_SOURCE_DIR}/third_party/rtthread-nano/rt-thread/bsp/stm32f407-msh")
 
 if((PLATFORM STREQUAL "rtthread" OR PLATFORM STREQUAL "stm32f407")
    AND EXISTS "${STM32_F407_BSP_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h")
